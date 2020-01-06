@@ -66,6 +66,17 @@ class DatabaseHelper {
 		return result;
 	}
 
+	Future<User> getLogin(String phone, String password) async {
+    var db = await this.database;
+    var result = await db.rawQuery("SELECT * FROM $tblUsers WHERE phone = '$phone' and password = '$password'");
+
+    if (result.length > 0) {
+      return User.fromDb(result.first);
+    }
+
+    return null;
+  }
+
 	// Get number of User objects in database
 	Future<int> getCount() async {
 		Database db = await this.database;
