@@ -1,10 +1,27 @@
 import 'package:flutter/material.dart';
-import './loginForm/LoginPage.dart';
 
-void main () => runApp(
-	MaterialApp(
-  	debugShowCheckedModeBanner: false,
-  	title: "Cashless",
-  	home: LoginPage()
-  )
-);
+import './pages/login/LoginPage.dart';
+import './pages/register/RegisterPage.dart';
+import './pages/forget/ForgetPassword.dart';
+import './menuForm/NavBar.dart';
+
+import './models/user.dart';
+
+void main () => runApp(MyApp());
+
+class MyApp extends StatelessWidget {
+	@override
+	Widget build(BuildContext context) {
+		return 	MaterialApp(
+			debugShowCheckedModeBanner: false,
+			title: "Cashless",
+			routes: {
+				'/login':          (BuildContext context) => LoginPage(),
+				'/register':       (BuildContext context) => Register(User('', '', '', '', '', '', '')),
+				'/forgetpassword': (BuildContext context) => ForgetPassword(),
+				'/dashboard':      (BuildContext context) => NavBar()
+			},
+			home: LoginPage()
+		);
+	}
+}
