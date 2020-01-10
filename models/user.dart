@@ -1,11 +1,11 @@
 class User {
 
-  int id;
+  int id, confirm;
   String name, email, phone, studentId, password, pin, date;
 
-  User(this.name, this.email, this.phone, this.studentId, this.password, this.pin, this.date);
+  User(this.name, this.email, this.phone, this.studentId, this.password, this.pin, this.date, this.confirm);
 
-  User.withId(this.id, this.name, this.email, this.phone, this.studentId, this.password, this.pin, this.date);
+  User.withId(this.id, this.name, this.email, this.phone, this.studentId, this.password, this.pin, this.date, this.confirm);
 
   User.fromJson(Map json)
     : id        = json['id'],
@@ -15,7 +15,8 @@ class User {
       studentId = json['studentId'],
       password  = json['password'],
 			pin       = json['pin'],
-      date      = json['date'];
+      date      = json['date'],
+			confirm   = json['confirm'];
 
   Map<String, dynamic> toMap() {
 		var map = Map<String, dynamic>();
@@ -27,7 +28,7 @@ class User {
     map['password']  = password;
 		map['pin']       = pin;
     map['date']      = date;
-
+		map['confirm']   = confirm;
 		return map;
 	}
 
@@ -39,5 +40,6 @@ class User {
       studentId = map['studentId'],
       password  = map['password'],
 			pin       = map['pin'],
-      date      = map['date'];
+      date      = map['date'],
+			confirm   = map['confirm'];
 }

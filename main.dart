@@ -17,7 +17,7 @@ class MyApp extends StatelessWidget {
 			title: "Cashless",
 			routes: {
 				'/login':          (BuildContext context) => LoginPage(),
-				'/register':       (BuildContext context) => Register(User('', '', '', '', '', '', '')),
+				'/register':       (BuildContext context) => Register(User('', '', '', '', '', '', '', 0)),
 				'/forgetpassword': (BuildContext context) => ForgetPassword(),
 				'/dashboard':      (BuildContext context) => NavBar()
 			},

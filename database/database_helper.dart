@@ -31,7 +31,8 @@ class DatabaseHelper {
 	Future<Database> initializeDatabase() async {
 		// Get the directory path for both Android and iOS to store database.
 		Directory directory = await getApplicationDocumentsDirectory();
-		String path = directory.path + 'cashless.db';
+		String path = directory.path + 'cashless_v1.db';
+		print(directory.path);
 		// Open/create the database at a given path
 		var dbCashless = await openDatabase(path, version: 1, onCreate: _createDb);
 		return dbCashless;
@@ -47,7 +48,8 @@ class DatabaseHelper {
 			'  studentId	TEXT,'
 			'  password 	TEXT,'
 			'  pin 				TEXT,'
-			'  date 			TEXT'
+			'  date 			TEXT,'
+			'  confirm   INTEGER'
 			')'
 		);
 	}

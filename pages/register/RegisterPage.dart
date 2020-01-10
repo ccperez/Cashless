@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
 
@@ -16,7 +18,6 @@ class Register extends StatefulWidget {
 }
 
 class _RegisterState extends State<Register> {
-	final _scaffoldKey = GlobalKey<ScaffoldState>();
   var _formKey = GlobalKey<FormState>();
 
 	User user;
@@ -27,7 +28,15 @@ class _RegisterState extends State<Register> {
 
 	String _name, _email, _phone, _studentId, _password, _pin;
 
-	bool passwordVisible, pinVisible = true;
+	bool passwordVisible, pinVisible;
+	bool _autoValidate = false;
+
+	@override
+  void initState() {
+    super.initState();
+		passwordVisible = true;
+		pinVisible = true;
+	}
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +51,6 @@ class _RegisterState extends State<Register> {
 		return WillPopScope(
 			onWillPop: () { navigatePreviousPage(); },
 			child: Scaffold(
-				key: _scaffoldKey,
 				appBar: AppBar(
 					title: Text('SmartPay'),
 					backgroundColor: Colors.green[900],
@@ -52,6 +60,7 @@ class _RegisterState extends State<Register> {
 				),
 				body: Form(
 					key: _formKey,
+					autovalidate: _autoValidate,
 					child: Stack(
 						fit: StackFit.expand,
 						children: <Widget>[
@@ -63,12 +72,12 @@ class _RegisterState extends State<Register> {
 												mainAxisAlignment: MainAxisAlignment.center,
 												children: <Widget>[
 													textPage('Create a New Profile'),
-													textFormField(Icons.person, 'Name', 'Enter Full Name', TextInputType.text),
-													textFormField(Icons.email, 'Email', 'Enter Email Address', TextInputType.emailAddress),
-													textFormField(Icons. phone_android, 'Phone Number', 'Enter Phone Number', TextInputType.number),
-													textFormField(Icons.perm_identity, 'School ID', 'Enter School ID Number', TextInputType.number),
-													textFormField(Icons.lock, 'Password', 'Enter a Password', TextInputType.text),
-													textFormField(Icons.vpn_key, 'Pin', 'Enter a Pin for payment', TextInputType.number),
+													textFormField(Icons.person, 'Name', 'Enter Full Name', TextInputType.text, false),
+													textFormField(Icons.email, 'Email', 'Enter Email Address', TextInputType.emailAddress, false),
+													textFormField(Icons. phone_android, 'Phone Number', 'Enter Phone Number', TextInputType.number, false),
+													textFormField(Icons.perm_identity, 'School ID', 'Enter School ID Number', TextInputType.number, false),
+													textFormField(Icons.lock, 'Password', 'Enter a Password', TextInputType.text, passwordVisible),
+													textFormField(Icons.vpn_key, 'Pin', 'Enter a Pin for payment', TextInputType.number, pinVisible),
 													signupButton('Sign Up'),
 												],
 											),
@@ -88,17 +97,21 @@ class _RegisterState extends State<Register> {
     child: Text(lblText, style: TextStyle(fontSize: 18),)
   );
 
-  Widget textFormField(icnText, lblText, hntText, keyType) => Padding(
+  Widget textFormField(icnText, lblText, hntText, keyType, blnObscure) => Padding(
     padding: const EdgeInsets.only(top: 10, bottom: 8),
     child: TextFormField(
       keyboardType: keyType,
-			obscureText: _obscureText(lblText),
+			inputFormatters: keyType == TextInputType.number
+				? <TextInputFormatter>[WhitelistingTextInputFormatter.digitsOnly]
+				: null,
+			obscureText: blnObscure,
       onSaved: (value) => updateTextFormField(lblText, value),
       validator: (String value) => textValidation(lblText, value),
       decoration: InputDecoration(
 				labelText: lblText,
 				hintText: hntText,
 				prefixIcon: Icon(icnText, color: Colors.grey),
+				suffixIcon: _suffixIcon(lblText, blnObscure),
       ),
     ),
   );
@@ -117,47 +130,33 @@ class _RegisterState extends State<Register> {
   // Functions
 	void _submit() {
 		final form = _formKey.currentState;
-		if (form.validate()) { form.save(); _save(); }
+		if (form.validate()) {
+			form.save();
+			_save();
+		} else {
+			setState((){ _autoValidate=true; });
+		}
 	}
 
-  bool _obscureText(lblText) {
-		switch (lblText) {
-			case 'Password':
-				return true;
-				break;
-			case 'Pin':
-				return true;
-				break;
+	_suffixIcon(lblText, blnObscure) {
+		if (lblText == 'Password' || lblText == 'Pin') {
+			return IconButton(
+				icon: Icon(blnObscure ? Icons.visibility : Icons.visibility_off),
+				onPressed: () {
+					lblText == 'Password'
+						? setState(() { passwordVisible = !passwordVisible; })
+						: setState(() { pinVisible = !pinVisible; });
+				}
+			);
 		}
-		return false;
-	}
-
-	_suffixIcon(lblText) {
-		var sfxIcon;
-		switch (lblText) {
-			case 'Password':
-				sfxIcon = IconButton(
-					icon: Icon(passwordVisible ? Icons.visibility : Icons.visibility_off),
-					onPressed: () => setState(() { passwordVisible = !passwordVisible; })
-				);
-				break;
-			case 'Pin':
-				sfxIcon = IconButton(
-					icon: Icon(pinVisible ? Icons.visibility : Icons.visibility_off),
-					onPressed: () => setState(() { pinVisible = !pinVisible; })
-				);
-				break;
-			default:
-				sfxIcon = Icon(Icons.widgets, color: Colors.white);
-		}
-		return sfxIcon;
+		return Icon(Icons.visibility_off, color: Colors.white);
 	}
 
   textValidation(lblText, value) {
 		if (value.isEmpty) {
 			return '$lblText should not be empty';
 		} else {
-			switch (lblText){
+			switch (lblText) {
 				case 'Name':
 					return !value.contains(' ') ? 'Invalid Full Name' : null;
 					break;

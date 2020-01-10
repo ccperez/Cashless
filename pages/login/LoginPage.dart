@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/cupertino.dart';
 
 class LoginPage extends StatefulWidget {
@@ -10,13 +11,18 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   var _formKey = GlobalKey<FormState>();
+
+	String _phone, _password;
+
   bool passwordVisible = true;
+	bool _autoValidate = false;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Form(
         key: _formKey,
+				autovalidate: _autoValidate,
         child: Stack(
           fit: StackFit.expand,
           children: <Widget>[
@@ -28,8 +34,8 @@ class _LoginPageState extends State<LoginPage> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
                         appName('SmartPay'),
-                        textFormField(Icons.person, 'Phone Number', TextInputType.number),
-                        textFormField(Icons.lock, 'Password', TextInputType.text),
+                        textFormField(Icons.person, 'Phone Number', TextInputType.number, _phone),
+                        textFormField(Icons.lock, 'Password', TextInputType.text, _password),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: <Widget>[
@@ -65,11 +71,15 @@ class _LoginPageState extends State<LoginPage> {
   );
 
 
-  Widget textFormField(icnText, hntText, keyType) => Padding(
+  Widget textFormField(icnText, hntText, keyType, txtField) => Padding(
     padding: const EdgeInsets.only(left: 20, right: 20, top: 15,),
     child: TextFormField(
       keyboardType: keyType,
+			inputFormatters: keyType == TextInputType.number
+				? <TextInputFormatter>[WhitelistingTextInputFormatter.digitsOnly]
+				: null,
       obscureText: hntText == 'Password' ? passwordVisible : false,
+			onSaved: (value) => txtField = value,
       validator: (String value,) => textValidation(hntText, value),
       decoration: InputDecoration(
         hintText: hntText,
@@ -95,7 +105,13 @@ class _LoginPageState extends State<LoginPage> {
       color: Colors.greenAccent,
       child: Text(txtLogin),
       onPressed: () {
-				if (_formKey.currentState.validate()) navigatePage('/dashboard');
+				var form = _formKey.currentState;
+				if (form.validate()) {
+					form.save();
+					navigatePage('/dashboard');
+				} else {
+					setState((){ _autoValidate=true; });
+				}
 			}
     )
   );
