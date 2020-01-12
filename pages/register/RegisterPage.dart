@@ -1,10 +1,12 @@
 import 'dart:async';
 import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:password/password.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
+
+import 'package:flutter/cupertino.dart';
 
 import '../../models/user.dart';
 import '../../database/controller/users_controller.dart';
@@ -245,8 +247,7 @@ class _RegisterState extends State<Register> {
     showDialog(context: context, builder: (_) => alertDialog);
   }
 
-	void navigatePreviousPage() =>
-		Navigator.pushReplacementNamed(context, '/login');
+	void navigatePreviousPage() => Navigator.pushReplacementNamed(context, '/login');
 
   dialog() {
 		String genCode = _generateConfirmationCode(_phone, _password);
@@ -282,19 +283,19 @@ class _RegisterState extends State<Register> {
 				actions: <Widget>[
 					FlatButton(
 						child: Text('Submit'),
-						onPressed: () {
-							if (_confirmationCode == genCode) {
-								user.confirm = 1;
-								users.update(user);
-								navigatePreviousPage();
-							} else {
-								_showAlertDialog('Warning', 'Invalid Confirmation Code');
-							}
-						},
+						onPressed: () =>
+							(_confirmationCode == genCode) ? _confirmAccount() : _showAlertDialog('Warning', 'Invalid Confirmation Code'),
 					),
 				],
 			),
 		);
 	}
+
+	void _confirmAccount() async {
+		int result = await users.confirmAccount(user);
+		(result > 0) ? _redirectLogin() : _showAlertDialog('Warning', 'Problem Confirming');
+  }
+
+	void _redirectLogin() => Future.delayed(Duration(seconds: 2), () => navigatePreviousPage());
 
 }
