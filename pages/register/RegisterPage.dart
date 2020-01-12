@@ -1,12 +1,13 @@
 import 'dart:async';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:password/password.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
 
 import '../../models/user.dart';
-import '../../database/database_helper.dart';
-import '../../menuForm/NavBar.dart';
+import '../../database/controller/users_controller.dart';
 
 class Register extends StatefulWidget {
 	final User user;
@@ -24,11 +25,11 @@ class _RegisterState extends State<Register> {
 
 	_RegisterState(this.user);
 
-  DatabaseHelper helper = DatabaseHelper();
+	UsersController users = UsersController();
 
-	String _name, _email, _phone, _studentId, _password, _pin;
+	String _phone, _studentId, _name, _email, _password, _pin, _confirmationCode;
 
-	bool passwordVisible, pinVisible;
+	bool passwordVisible, pinVisible, _isSubmitting;
 	bool _autoValidate = false;
 
 	@override
@@ -36,17 +37,11 @@ class _RegisterState extends State<Register> {
     super.initState();
 		passwordVisible = true;
 		pinVisible = true;
+    _isSubmitting = false;
 	}
 
   @override
   Widget build(BuildContext context) {
-
-		_name      = user.name;
-		_email     = user.email;
-		_phone     = user.phone;
-		_studentId = user.studentId;
-		_password  = user.password;
-		_pin       = user.pin;
 
 		return WillPopScope(
 			onWillPop: () { navigatePreviousPage(); },
@@ -72,10 +67,10 @@ class _RegisterState extends State<Register> {
 												mainAxisAlignment: MainAxisAlignment.center,
 												children: <Widget>[
 													textPage('Create a New Profile'),
-													textFormField(Icons.person, 'Name', 'Enter Full Name', TextInputType.text, false),
-													textFormField(Icons.email, 'Email', 'Enter Email Address', TextInputType.emailAddress, false),
 													textFormField(Icons. phone_android, 'Phone Number', 'Enter Phone Number', TextInputType.number, false),
 													textFormField(Icons.perm_identity, 'School ID', 'Enter School ID Number', TextInputType.number, false),
+													textFormField(Icons.person, 'Name', 'Enter Full Name', TextInputType.text, false),
+													textFormField(Icons.email, 'Email', 'Enter Email Address', TextInputType.emailAddress, false),
 													textFormField(Icons.lock, 'Password', 'Enter a Password', TextInputType.text, passwordVisible),
 													textFormField(Icons.vpn_key, 'Pin', 'Enter a Pin for payment', TextInputType.number, pinVisible),
 													signupButton('Sign Up'),
@@ -117,15 +112,21 @@ class _RegisterState extends State<Register> {
   );
 
   // Signup Button
-  Widget signupButton(txtSignup) => Padding(
-    padding: const EdgeInsets.only(top: 2, left: 220),
-    child: RaisedButton(
-      color: Colors.greenAccent,
-      child: Text(txtSignup),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      onPressed: _submit
-    )
-  );
+  Widget signupButton(txtSignup) {
+    return _isSubmitting
+      ? CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation(Theme.of(context).primaryColor)
+        )
+      : Padding(
+          padding: const EdgeInsets.only(top: 2, left: 220),
+          child: RaisedButton(
+            color: Colors.greenAccent,
+            child: Text(txtSignup),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            onPressed: _submit
+          )
+        );
+  }
 
   // Functions
 	void _submit() {
@@ -134,7 +135,7 @@ class _RegisterState extends State<Register> {
 			form.save();
 			_save();
 		} else {
-			setState((){ _autoValidate=true; });
+			setState(() => _autoValidate = true);
 		}
 	}
 
@@ -144,8 +145,8 @@ class _RegisterState extends State<Register> {
 				icon: Icon(blnObscure ? Icons.visibility : Icons.visibility_off),
 				onPressed: () {
 					lblText == 'Password'
-						? setState(() { passwordVisible = !passwordVisible; })
-						: setState(() { pinVisible = !pinVisible; });
+						? setState(() => passwordVisible = !passwordVisible)
+						: setState(() => pinVisible = !pinVisible);
 				}
 			);
 		}
@@ -157,6 +158,12 @@ class _RegisterState extends State<Register> {
 			return '$lblText should not be empty';
 		} else {
 			switch (lblText) {
+				case 'Phone Number':
+					return value.length < 12 ? 'Phone Number must be 11 digits' : null;
+					break;
+				case 'School ID':
+					return value.length < 6 ? 'School ID must be 6 digits' : null;
+					break;
 				case 'Name':
 					return !value.contains(' ') ? 'Invalid Full Name' : null;
 					break;
@@ -164,12 +171,6 @@ class _RegisterState extends State<Register> {
 					Pattern pattern = r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
 					RegExp regex = RegExp(pattern);
 					return !regex.hasMatch(value) ? 'Invalid Email' : null;
-					break;
-				case 'Phone Number':
-					return value.length < 12 ? 'Phone Number must be 11 digits' : null;
-					break;
-				case 'School ID':
-					return value.length < 6 ? 'School ID must be 6 digits' : null;
 					break;
 				case 'Password':
 					return value.length < 6 ? 'Password must be 6 characters or longer' : null;
@@ -183,14 +184,6 @@ class _RegisterState extends State<Register> {
 
   void updateTextFormField(lblText, txtValue) {
     switch (lblText) {
-      case 'Name':
-				_name = txtValue;
-        user.name = txtValue;
-				break;
-      case 'Email':
-				_email = txtValue;
-        user.email = txtValue;
-				break;
       case 'Phone Number':
 				_phone = txtValue;
 				user.phone = txtValue;
@@ -199,22 +192,52 @@ class _RegisterState extends State<Register> {
 				_studentId = txtValue;
 				user.studentId = txtValue;
 				break;
+      case 'Name':
+				_name = txtValue;
+        user.name = txtValue;
+				break;
+      case 'Email':
+				_email = txtValue;
+        user.email = txtValue;
+				break;
       case 'Password':
 				_password = txtValue;
-        user.password = txtValue;
+        user.password = Password.hash(_password, PBKDF2());
 				break;
       case 'Pin':
 				_pin = txtValue;
-				user.pin = txtValue;
+				user.pin = Password.hash(_pin, PBKDF2());
 				break;
     }
   }
 
+	List shuffle(List items) {
+		var random = Random();
+		for (var i = items.length - 1; i > 0; i--) {
+			var n = random.nextInt(i + 1);
+			var temp = items[i];
+			items[i] = items[n];
+			items[n] = temp;
+		}
+		return items;
+	}
+	_generateConfirmationCode(username, password) {
+		var confirmationCode = shuffle((username+password).split('')).join();
+		confirmationCode = Password.hash(confirmationCode, PBKDF2());
+		return confirmationCode.substring(0,4)+confirmationCode.substring(confirmationCode.length-4);
+	}
+
   void _save() async {
+    setState(() => _isSubmitting = true);
 		user.date = DateFormat.yMMMd().format(DateTime.now());
-		int result;
-		result = (user.id != null) ? await helper.updateUser(user) :  await helper.insertUser(user);
-		_showAlertDialog('Status', (result != 0)  ? 'Saved Succefully' : 'Problem Saving');
+		int result = await users.save(user);
+    if (result > 0) {
+      setState(() => _isSubmitting = false);
+      dialog();
+    } else  {
+      setState(() => _isSubmitting = false);
+			_showAlertDialog('Warning', 'Problem Saving');
+    }
   }
 
   void _showAlertDialog(title, message) {
@@ -225,50 +248,53 @@ class _RegisterState extends State<Register> {
 	void navigatePreviousPage() =>
 		Navigator.pushReplacementNamed(context, '/login');
 
-  dialog() => showDialog(
-    context: context,
-    builder: (BuildContext context) => AlertDialog(
-      shape: RoundedRectangleBorder(
-				borderRadius: BorderRadius.circular(20),
-      ),
-      backgroundColor: Colors.grey[100],
-      title: Column(
-        children: <Widget>[
-          Text('We sent you a Confirmation Code',
-						textAlign: TextAlign.center,
-						style: TextStyle(fontSize: 18, fontStyle: FontStyle.italic),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(top: 8.0),
-            child: Text('Please Check your Inbox',
-							textAlign: TextAlign.center,
-							style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic)
+  dialog() {
+		String genCode = _generateConfirmationCode(_phone, _password);
+		return showDialog(
+			context: context,
+			builder: (BuildContext context) => AlertDialog(
+				shape: RoundedRectangleBorder(
+					borderRadius: BorderRadius.circular(20),
+				),
+				backgroundColor: Colors.grey[100],
+				title: Column(
+					children: <Widget>[
+						Text('Thank you for signing up', textAlign: TextAlign.center, style: TextStyle(fontSize: 18)),
+						Padding(
+							padding: const EdgeInsets.only(top: 5.0),
+							child: Text('To complete the process please enter confirmation code: $genCode',
+								textAlign: TextAlign.center, style: TextStyle(fontSize: 16, color: Colors.red)
+							),
+						)
+					],
+				),
+				content: TextField(
+					onChanged: (value) { _confirmationCode = value; },
+					decoration: InputDecoration(
+						hintText: 'Enter Confirmation Code',
+						hintStyle: TextStyle(fontSize: 12),
+						prefixIcon: Icon(Icons.code),
+						enabledBorder: OutlineInputBorder(
+							borderRadius: BorderRadius.circular(12)
 						),
-          )
-        ],
-      ),
-      content: TextField(
-        decoration: InputDecoration(
-          hintText: 'Enter Confirmation Code',
-          hintStyle: TextStyle(fontSize: 12),
-          prefixIcon: Icon(Icons.code),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12)
-          ),
-        ),
-      ),
-      actions: <Widget>[
-        FlatButton(
-          child: Text('Login'),
-          onPressed: () {
-            Navigator.of(context).push(
-							CupertinoPageRoute<Null>(builder: (
-							BuildContext context) => NavBar())
-						);
-          },
-        ),
-      ],
-    ),
-  );
+					),
+				),
+				actions: <Widget>[
+					FlatButton(
+						child: Text('Submit'),
+						onPressed: () {
+							if (_confirmationCode == genCode) {
+								user.confirm = 1;
+								users.update(user);
+								navigatePreviousPage();
+							} else {
+								_showAlertDialog('Warning', 'Invalid Confirmation Code');
+							}
+						},
+					),
+				],
+			),
+		);
+	}
 
 }
