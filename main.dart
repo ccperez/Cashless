@@ -4,7 +4,7 @@ import './pages/login/LoginPage.dart';
 import './pages/register/RegisterPage.dart';
 import './pages/forget/ForgetPassword.dart';
 
-// import './pages/list/user_list.dart';
+import './pages/list/user_list.dart';
 
 import './menuForm/NavBar.dart';
 
@@ -24,7 +24,7 @@ class MyApp extends StatelessWidget {
 				'/forgetpassword': (BuildContext context) => ForgetPassword(),
 				'/dashboard':      (BuildContext context) => NavBar()
 			},
-			home: LoginPage()
+			home: UserList()
 		);
 	}
 }

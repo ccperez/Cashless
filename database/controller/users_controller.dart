@@ -23,10 +23,22 @@ class UsersController {
 		return result;
 	}
 
+	Future<int> accountExist(User user) async {
+		Database db = await connect.database;
+		int result = await db.rawUpdate('Update $tblUsers Set confirm=1 Where confirm=1 and phone = ?', [user.phone]);
+		return result;
+	}
+
 	// Update Operation: Update a user object to database
 	Future<int> update(User user) async {
 		Database db = await connect.database;
 		int result = await db.update(tblUsers, user.toMap(), where: 'phone = ?', whereArgs: [user.phone]);
+		return result;
+	}
+
+	Future<int> delete(int id) async {
+		var db = await connect.database;
+		int result = await db.rawDelete('Delete From $tblUsers Where id = $id');
 		return result;
 	}
 

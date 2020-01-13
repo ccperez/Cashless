@@ -53,6 +53,10 @@ class _UserListState extends State<UserList> {
 						subtitle: Text(
 							this.userList[position].password +' : '+
 							this.userList[position].pin
+						),
+						trailing: GestureDetector(
+							child: Icon(Icons.delete, color: Colors.grey,),
+							onTap: () => _delete(context, userList[position]),
 						)
 				)
 			)
@@ -71,5 +75,18 @@ class _UserListState extends State<UserList> {
 			});
 		});
   }
+
+	void _delete(BuildContext context, User user) async {
+		int result = await users.delete(user.id);
+		if (result != 0) {
+			_showSnackBar(context, 'User Deleted Successfully');
+			updateListView();
+		}
+	}
+
+	void _showSnackBar(BuildContext context, String message) {
+		final snackBar = SnackBar(content: Text(message));
+		Scaffold.of(context).showSnackBar(snackBar);
+	}
 
 }

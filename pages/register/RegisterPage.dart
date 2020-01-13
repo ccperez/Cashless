@@ -113,7 +113,6 @@ class _RegisterState extends State<Register> {
     ),
   );
 
-  // Signup Button
   Widget signupButton(txtSignup) {
     return _isSubmitting
       ? CircularProgressIndicator(
@@ -161,7 +160,7 @@ class _RegisterState extends State<Register> {
 		} else {
 			switch (lblText) {
 				case 'Phone Number':
-					return value.length < 12 ? 'Phone Number must be 11 digits' : null;
+					return value.length < 11 ? 'Phone Number must be 11 digits' : null;
 					break;
 				case 'School ID':
 					return value.length < 6 ? 'School ID must be 6 digits' : null;
@@ -226,28 +225,32 @@ class _RegisterState extends State<Register> {
 	_generateConfirmationCode(username, password) {
 		var confirmationCode = shuffle((username+password).split('')).join();
 		confirmationCode = Password.hash(confirmationCode, PBKDF2());
-		return confirmationCode.substring(0,4)+confirmationCode.substring(confirmationCode.length-4);
+		return confirmationCode.substring(confirmationCode.length-8);
 	}
 
   void _save() async {
-    setState(() => _isSubmitting = true);
-		user.date = DateFormat.yMMMd().format(DateTime.now());
-		int result = await users.save(user);
-    if (result > 0) {
-      setState(() => _isSubmitting = false);
-      dialog();
-    } else  {
-      setState(() => _isSubmitting = false);
-			_showAlertDialog('Warning', 'Problem Saving');
-    }
+		int result;
+		result = await users.accountExist(user);
+		if (result > 0) {
+			_showAlertDialog('Warning', 'Account already exist');
+		} else {
+			setState(() => _isSubmitting = true);
+			user.date = DateFormat.yMMMd().format(DateTime.now());
+			result = await users.save(user);
+			if (result > 0) {
+				setState(() => _isSubmitting = false);
+				dialog();
+			} else  {
+				setState(() => _isSubmitting = false);
+				_showAlertDialog('Warning', 'Problem saving user');
+			}
+		}
   }
 
-  void _showAlertDialog(title, message) {
+	void _showAlertDialog(title, message) {
     AlertDialog alertDialog = AlertDialog(title: Text(title), content: Text(message));
     showDialog(context: context, builder: (_) => alertDialog);
   }
-
-	void navigatePreviousPage() => Navigator.pushReplacementNamed(context, '/login');
 
   dialog() {
 		String genCode = _generateConfirmationCode(_phone, _password);
@@ -293,8 +296,15 @@ class _RegisterState extends State<Register> {
 
 	void _confirmAccount() async {
 		int result = await users.confirmAccount(user);
-		(result > 0) ? _redirectLogin() : _showAlertDialog('Warning', 'Problem Confirming');
+		if (result > 0) {
+			_formKey.currentState.reset();
+			 _redirectLogin();
+		 } else {
+			 _showAlertDialog('Warning', 'Problem Confirming Account');
+		 }
   }
+
+	void navigatePreviousPage() => Navigator.pushReplacementNamed(context, '/login');
 
 	void _redirectLogin() => Future.delayed(Duration(seconds: 2), () => navigatePreviousPage());
 
