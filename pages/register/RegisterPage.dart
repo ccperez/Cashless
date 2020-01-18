@@ -12,20 +12,15 @@ import '../../controller/users_controller.dart';
 import '../../utilities/registration_utilities.dart';
 
 class Register extends StatefulWidget {
-	final User user;
-
-	Register(this.user);
-
   @override
-  _RegisterState createState() => _RegisterState(this.user);
+  _RegisterState createState() => _RegisterState();
 }
 
 class _RegisterState extends State<Register> {
   var _formKey = GlobalKey<FormState>();
 
-	User user;
+	User user = User('', '', '', '', '', '', '', 0);
 
-	_RegisterState(this.user);
 
 	UsersController users = UsersController();
 	RegistrationUtilities register = RegistrationUtilities();
