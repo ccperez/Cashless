@@ -1,15 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/cupertino.dart';
 
-import './ForgetPassword.dart';
-import '../menuForm/NavBar.dart';
-import './RegisterPage.dart';
-
-import '../models/user.dart';
-
-
 class LoginPage extends StatefulWidget {
-
   LoginPage({Key key}) : super(key: key);
 
   @override
@@ -17,22 +10,19 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-
   var _formKey = GlobalKey<FormState>();
 
-  bool passwordVisible;
+	String _phone, _password;
 
-  @override
-  void initState() {
-		super.initState();
-    passwordVisible = false;
-}
+  bool passwordVisible = true;
+	bool _autoValidate = false;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Form(
         key: _formKey,
+				autovalidate: _autoValidate,
         child: Stack(
           fit: StackFit.expand,
           children: <Widget>[
@@ -44,12 +34,12 @@ class _LoginPageState extends State<LoginPage> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
                         appName('SmartPay'),
-                        textFormField(Icons.person, 'Phone Number', TextInputType.number),
-                        textFormField(Icons.lock, 'Password', TextInputType.text),
+                        textFormField(Icons.person, 'Phone Number', TextInputType.number, _phone),
+                        textFormField(Icons.lock, 'Password', TextInputType.text, _password),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: <Widget>[
-                            linkButton('Sign Up', () => navigatePage(Register(User('', '', '', '', '', '', '')))),
+                            linkButton('Sign Up', () => navigatePage('/register')),
                             linkButton('Forgot Password?', () => forgotPassDialog()),
                           ],
                         ),
@@ -81,24 +71,25 @@ class _LoginPageState extends State<LoginPage> {
   );
 
 
-  Widget textFormField(icnText, hntText, keyType) => Padding(
+  Widget textFormField(icnText, hntText, keyType, txtField) => Padding(
     padding: const EdgeInsets.only(left: 20, right: 20, top: 15,),
     child: TextFormField(
       keyboardType: keyType,
-      obscureText: hntText == 'Password' ? !passwordVisible : false,
+			inputFormatters: keyType == TextInputType.number
+				? <TextInputFormatter>[WhitelistingTextInputFormatter.digitsOnly]
+				: null,
+      obscureText: hntText == 'Password' ? passwordVisible : false,
+			onSaved: (value) => txtField = value,
       validator: (String value,) => textValidation(hntText, value),
       decoration: InputDecoration(
         hintText: hntText,
         prefixIcon: Icon(icnText, color: Colors.grey),
         suffixIcon: hntText == 'Password'
 					? IconButton(
-						icon: Icon(passwordVisible ? Icons.visibility : Icons.visibility_off),
-						onPressed: () => setState(() { passwordVisible = !passwordVisible; })
-					)
-					: IconButton(
-						icon: Icon(Icons.phone_android),
-						onPressed: () {}
-          ),
+							icon: Icon(passwordVisible ? Icons.visibility : Icons.visibility_off),
+							onPressed: () => setState(() { passwordVisible = !passwordVisible; })
+						)
+					: Icon(Icons.phone_android),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(15),
         ),
@@ -114,7 +105,13 @@ class _LoginPageState extends State<LoginPage> {
       color: Colors.greenAccent,
       child: Text(txtLogin),
       onPressed: () {
-				if (_formKey.currentState.validate()) navigatePage(NavBar());
+				var form = _formKey.currentState;
+				if (form.validate()) {
+					form.save();
+					navigatePage('/dashboard');
+				} else {
+					setState((){ _autoValidate=true; });
+				}
 			}
     )
   );
@@ -139,11 +136,8 @@ class _LoginPageState extends State<LoginPage> {
 		return errorMessages;
   }
 
-	void navigatePage(navTo) => Navigator.of(context).push(
-        CupertinoPageRoute<Null>(
-          builder: (BuildContext context) => navTo
-		)
-	);
+	void navigatePage(navTo) =>
+		Navigator.pushReplacementNamed(context, navTo);
 
   forgotPassDialog() => showDialog(
 		context: context,
@@ -180,7 +174,7 @@ class _LoginPageState extends State<LoginPage> {
 			actions: <Widget>[
 				FlatButton(
 					child: Text('OKAY'),
-					onPressed: () => navigatePage(ForgetPin())
+					onPressed: () => navigatePage('/forgetpassword')
 				),
 			],
 		),

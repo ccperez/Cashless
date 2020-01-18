@@ -1,43 +1,45 @@
 class User {
 
-  int id;
-  String name, email, phone, studentId, password, pin, date;
+  int id, confirm;
+  String phone, studentId, name, email, password, pin, date;
 
-  User(this.name, this.email, this.phone, this.studentId, this.password, this.pin, this.date);
+  User(this.phone, this.studentId, this.name, this.email, this.password, this.pin, this.date, this.confirm);
 
-  User.withId(this.id, this.name, this.email, this.phone, this.studentId, this.password, this.pin, this.date);
+  User.withId(this.id, this.phone, this.studentId, this.name, this.email, this.password, this.pin, this.date, this.confirm);
 
   User.fromJson(Map json)
     : id        = json['id'],
-      name      = json['name'],
-      email     = json['email'],
 			phone     = json['phone'],
       studentId = json['studentId'],
+      name      = json['name'],
+      email     = json['email'],
       password  = json['password'],
 			pin       = json['pin'],
-      date      = json['date'];
+      date      = json['date'],
+			confirm   = json['confirm'];
 
   Map<String, dynamic> toMap() {
 		var map = Map<String, dynamic>();
 		if (id != null) map['id'] = id;
-    map['name']      = name;
-    map['email']     = email;
 		map['phone']     = phone;
 		map['studentId'] = studentId;
+    map['name']      = name;
+    map['email']     = email;
     map['password']  = password;
 		map['pin']       = pin;
     map['date']      = date;
-
+		map['confirm']   = confirm;
 		return map;
 	}
 
   User.fromDb(Map map)
 		: id        = map['id'],
-      name      = map['name'],
-      email     = map['email'],
 			phone     = map['phone'],
       studentId = map['studentId'],
+      name      = map['name'],
+      email     = map['email'],
       password  = map['password'],
 			pin       = map['pin'],
-      date      = map['date'];
+      date      = map['date'],
+			confirm   = map['confirm'];
 }

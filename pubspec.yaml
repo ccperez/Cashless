@@ -10,7 +10,7 @@ dependencies:
   sqflite: any
   path_provider: any
   intl: ^0.16.0
-
+  password: ^1.0.0
 
   cupertino_icons: ^0.1.2
 
@@ -44,4 +44,3 @@ flutter:
   #       - asset: fonts/TrajanPro_Bold.ttf
   #         weight: 700
   #
-  
