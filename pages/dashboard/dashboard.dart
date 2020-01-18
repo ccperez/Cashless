@@ -1,23 +1,52 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 import 'package:flutter/cupertino.dart';
 
 import './NavPage/Home.dart';
 
-class NavBar extends StatefulWidget {
-  NavBar({Key key}) : super(key: key);
-
+class Dashboard extends StatefulWidget {
+  final VoidCallback signOut;
+  Dashboard(this.signOut);
   @override
-  _NavBarState createState() => _NavBarState();
+  _DashboardState createState() => _DashboardState();
 }
 
-class _NavBarState extends State<NavBar> {
+class _DashboardState extends State<Dashboard> {
+	signOut() {
+		setState(() { widget.signOut(); });
+	}
 
   int selectedPage = 0;
+
+	var signIn;
+
+  getPref() async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    setState(() => signIn = preferences.getInt("signIn") );
+  }
+
+  @override
+	void initState() {
+		super.initState();
+		getPref();
+	}
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      bottomNavigationBar: NaviBar(),
+      appBar: AppBar(
+        title: Text("Home Page"),
+        actions: <Widget>[
+           IconButton(
+						 icon: Icon(Icons.lock_open),
+						 onPressed: () => signOut()
+           )
+         ],
+      ),
+      body:  Center(
+        child:  Text("Home Page")
+      )
     );
   }
 }
@@ -35,23 +64,23 @@ class _NaviBarState extends State<NaviBar> {
 
   List<NavItem> items = [
     NavItem(
-      Icon(Icons.menu), 
-      Text('Menu',style: TextStyle(fontSize: 11)), 
+      Icon(Icons.menu),
+      Text('Menu',style: TextStyle(fontSize: 11)),
       Colors.greenAccent
     ),
     NavItem(
-      Icon(Icons.home), 
-      Text('Home',style: TextStyle(fontSize: 11)), 
+      Icon(Icons.home),
+      Text('Home',style: TextStyle(fontSize: 11)),
       Colors.lightGreen
     ),
     NavItem(
-      Icon(Icons.add), 
-      Text('Load Wallet',style: TextStyle(fontSize: 11)), 
+      Icon(Icons.add),
+      Text('Load Wallet',style: TextStyle(fontSize: 11)),
       Colors.green[700]
     ),
     NavItem(
-      Icon(Icons.receipt), 
-      Text('Transaction',style: TextStyle(fontSize: 11)), 
+      Icon(Icons.receipt),
+      Text('Transaction',style: TextStyle(fontSize: 11)),
       Colors.blueGrey
       ),
   ];
@@ -61,7 +90,7 @@ class _NaviBarState extends State<NaviBar> {
         duration: Duration(milliseconds: 200) ,
         height: double.maxFinite,
         width: isSelected ? 140 : 50,
-        padding: isSelected ? 
+        padding: isSelected ?
         EdgeInsets.only(left: 12, right: 12) : null,
         decoration: isSelected ? BoxDecoration(
           color: item.color,
@@ -79,10 +108,10 @@ class _NaviBarState extends State<NaviBar> {
                 color: isSelected ? bkgColor : Colors.grey[600]
                 ),
                 child: item.icon,
-              ), 
+              ),
                 Padding(
                   padding: const EdgeInsets.only(left: 8),
-                  child: isSelected ? 
+                  child: isSelected ?
                   DefaultTextStyle.merge(
                   style: TextStyle(
                   color: bkgColor,

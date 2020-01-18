@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:sqflite/sqflite.dart';
+import 'package:password/password.dart';
 
 import '../database/database_helper.dart';
 import '../models/user.dart';
@@ -29,6 +30,14 @@ class UsersController {
 		return result;
 	}
 
+	Future<User> getLogin(String phone, String password) async {
+    Database db = await connect.database;
+		password = Password.hash(password, PBKDF2());
+    var result = await db.rawQuery("SELECT * FROM $tblUsers WHERE confirm=1 and phone=? and password=?", [phone, password]);
+    if (result.length > 0) return  User.fromDb(result.first);
+    return null;
+  }
+
 	// Update Operation: Update a user object to database
 	Future<int> updateAccount(User user) async {
 		Database db = await connect.database;
@@ -45,7 +54,7 @@ class UsersController {
 	// Fetch Operation: Get all user objects from database
 	Future<List<Map<String, dynamic>>> getUserMapList() async {
 		Database db = await connect.database;
-		var result = await db.query(tblUsers);
+		var result = await db.query(tblUsers, orderBy: 'id DESC');
 		return result;
 	}
 

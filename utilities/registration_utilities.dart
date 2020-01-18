@@ -1,6 +1,5 @@
 
 import 'dart:math';
-
 import 'package:password/password.dart';
 
 class RegistrationUtilities {

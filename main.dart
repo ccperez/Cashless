@@ -6,10 +6,6 @@ import './pages/forget/ForgetPassword.dart';
 
 import './pages/list/user_list.dart';
 
-import './menuForm/NavBar.dart';
-
-import './models/user.dart';
-
 void main () => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
@@ -19,12 +15,11 @@ class MyApp extends StatelessWidget {
 			debugShowCheckedModeBanner: false,
 			title: "Cashless",
 			routes: {
+				'/':               (BuildContext context) => LoginPage(),
 				'/login':          (BuildContext context) => LoginPage(),
-				'/register':       (BuildContext context) => Register(User('', '', '', '', '', '', '', 0)),
-				'/forgetpassword': (BuildContext context) => ForgetPassword(),
-				'/dashboard':      (BuildContext context) => NavBar()
-			},
-			home: LoginPage()
+				'/register':       (BuildContext context) => Register(),
+				'/forgetpassword': (BuildContext context) => ForgetPassword()
+			}
 		);
 	}
 }
