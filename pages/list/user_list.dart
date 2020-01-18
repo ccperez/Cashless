@@ -5,7 +5,7 @@ import 'package:sqflite/sqflite.dart';
 
 import '../../models/user.dart';
 import '../../database/database_helper.dart';
-import '../../database/controller/users_controller.dart';
+import '../../controller/users_controller.dart';
 
 class UserList extends StatefulWidget {
 	@override
@@ -77,7 +77,7 @@ class _UserListState extends State<UserList> {
   }
 
 	void _delete(BuildContext context, User user) async {
-		int result = await users.delete(user.id);
+		int result = await users.deleteAccount(user.id);
 		if (result != 0) {
 			_showSnackBar(context, 'User Deleted Successfully');
 			updateListView();

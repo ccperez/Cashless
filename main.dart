@@ -24,7 +24,7 @@ class MyApp extends StatelessWidget {
 				'/forgetpassword': (BuildContext context) => ForgetPassword(),
 				'/dashboard':      (BuildContext context) => NavBar()
 			},
-			home: UserList()
+			home: LoginPage()
 		);
 	}
 }

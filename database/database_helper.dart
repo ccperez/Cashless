@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
 import 'dart:async';
 import 'package:path_provider/path_provider.dart';
@@ -14,16 +13,12 @@ class DatabaseHelper {
 	DatabaseHelper._createInstance(); // Named constructor to create instance of DatabaseHelper
 
 	factory DatabaseHelper() {
-		if (_databaseHelper == null) {
-			_databaseHelper = DatabaseHelper._createInstance(); // This is executed only once, singleton object
-		}
+		if (_databaseHelper == null) _databaseHelper = DatabaseHelper._createInstance(); // This is executed only once, singleton object
 		return _databaseHelper;
 	}
 
 	Future<Database> get database async {
-		if (_database == null) {
-			_database = await initializeDatabase();
-		}
+		if (_database == null) _database = await initializeDatabase();
 		return _database;
 	}
 
@@ -48,7 +43,7 @@ class DatabaseHelper {
 			'  pin 				TEXT,'
 			'  date 			TEXT,'
 			'  confirm  INTEGER'
-			')'
+			');'
 		);
 	}
 }

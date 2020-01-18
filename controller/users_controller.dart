@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:sqflite/sqflite.dart';
 
-import '../database_helper.dart';
-import '../../models/user.dart';
+import '../database/database_helper.dart';
+import '../models/user.dart';
 
 class UsersController {
 	DatabaseHelper connect = DatabaseHelper();
@@ -10,7 +10,7 @@ class UsersController {
 	String tblUsers = 'users';
 
 	// Save Operation: Update, not exist insert user object to database
-	Future<int> save(User user) async {
+	Future<int> saveAccout(User user) async {
 		Database db = await connect.database;
 		int result = await db.update(tblUsers, user.toMap(), where: 'phone = ?', whereArgs: [user.phone]);
 		if (result == 0) result = await db.insert(tblUsers, user.toMap());
@@ -30,13 +30,13 @@ class UsersController {
 	}
 
 	// Update Operation: Update a user object to database
-	Future<int> update(User user) async {
+	Future<int> updateAccount(User user) async {
 		Database db = await connect.database;
 		int result = await db.update(tblUsers, user.toMap(), where: 'phone = ?', whereArgs: [user.phone]);
 		return result;
 	}
 
-	Future<int> delete(int id) async {
+	Future<int> deleteAccount(int id) async {
 		var db = await connect.database;
 		int result = await db.rawDelete('Delete From $tblUsers Where id = $id');
 		return result;

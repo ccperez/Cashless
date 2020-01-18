@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -9,7 +8,8 @@ import 'package:intl/intl.dart';
 import 'package:flutter/cupertino.dart';
 
 import '../../models/user.dart';
-import '../../database/controller/users_controller.dart';
+import '../../controller/users_controller.dart';
+import '../../utilities/registration_utilities.dart';
 
 class Register extends StatefulWidget {
 	final User user;
@@ -28,6 +28,7 @@ class _RegisterState extends State<Register> {
 	_RegisterState(this.user);
 
 	UsersController users = UsersController();
+	RegistrationUtilities register = RegistrationUtilities();
 
 	String _phone, _studentId, _name, _email, _password, _pin, _confirmationCode;
 
@@ -212,31 +213,16 @@ class _RegisterState extends State<Register> {
     }
   }
 
-	List shuffle(List items) {
-		var random = Random();
-		for (var i = items.length - 1; i > 0; i--) {
-			var n = random.nextInt(i + 1);
-			var temp = items[i];
-			items[i] = items[n];
-			items[n] = temp;
-		}
-		return items;
-	}
-	_generateConfirmationCode(username, password) {
-		var confirmationCode = shuffle((username+password).split('')).join();
-		confirmationCode = Password.hash(confirmationCode, PBKDF2());
-		return confirmationCode.substring(confirmationCode.length-8);
-	}
-
   void _save() async {
 		int result;
+		setState(() => _isSubmitting = true);
 		result = await users.accountExist(user);
 		if (result > 0) {
+			setState(() => _isSubmitting = false);
 			_showAlertDialog('Warning', 'Account already exist');
 		} else {
-			setState(() => _isSubmitting = true);
 			user.date = DateFormat.yMMMd().format(DateTime.now());
-			result = await users.save(user);
+			result = await users.saveAccout(user);
 			if (result > 0) {
 				setState(() => _isSubmitting = false);
 				dialog();
@@ -253,7 +239,7 @@ class _RegisterState extends State<Register> {
   }
 
   dialog() {
-		String genCode = _generateConfirmationCode(_phone, _password);
+		String genCode = register.generateConfirmationCode(_phone, _password);
 		return showDialog(
 			context: context,
 			builder: (BuildContext context) => AlertDialog(
