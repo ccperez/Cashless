@@ -1,15 +1,20 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:password/password.dart';
 import 'package:intl/intl.dart';
+import 'package:http/http.dart' as http;
 
 import 'package:flutter/cupertino.dart';
 
 import '../../models/user.dart';
 import '../../controller/users_controller.dart';
 import '../../utilities/registration_utilities.dart';
+
+import '../../global.dart';
 
 class Register extends StatefulWidget {
   @override
@@ -99,7 +104,7 @@ class _RegisterState extends State<Register> {
 				: null,
 			obscureText: blnObscure,
       onSaved: (value) => updateTextFormField(lblText, value),
-      validator: (String value) => textValidation(lblText, value),
+      validator: (value) => textValidation(lblText, value),
       decoration: InputDecoration(
 				labelText: lblText,
 				hintText: hntText,
@@ -130,7 +135,7 @@ class _RegisterState extends State<Register> {
 		final form = _formKey.currentState;
 		if (form.validate()) {
 			form.save();
-			_save();
+			_registerUser();
 		} else {
 			setState(() => _autoValidate = true);
 		}
@@ -198,35 +203,51 @@ class _RegisterState extends State<Register> {
         user.email = txtValue;
 				break;
       case 'Password':
-				_password = txtValue;
-        user.password = Password.hash(_password, PBKDF2());
+				_password = Password.hash(txtValue, PBKDF2());
+        user.password = _password;
 				break;
       case 'Pin':
-				_pin = txtValue;
-				user.pin = Password.hash(_pin, PBKDF2());
+				_pin = Password.hash(txtValue, PBKDF2());
+				user.pin = _pin;
 				break;
     }
   }
 
-  void _save() async {
-		int result;
+  void _registerUser() async {
+    var data = {
+				"phone"			: _phone,
+				"studentId"	: _studentId,
+				"name"			: _name,
+				"email"			: _email,
+				"password"	: _password,
+				"pin"				: _pin
+		};
+
 		setState(() => _isSubmitting = true);
-		result = await users.accountExist(user);
-		if (result > 0) {
+  	http.Response response = await http.post(USER_SIGNUP, body: data);
+    final responseData = json.decode(response.body);
+
+    if (response.statusCode == 200) {
 			setState(() => _isSubmitting = false);
-			_showAlertDialog('Warning', 'Account already exist');
+			var result = responseData['result'];
+			result == 1 ?	_showAlertDialog('Warning', 'Account already exist') : _saveLocalDB();
 		} else {
-			user.date = DateFormat.yMMMd().format(DateTime.now());
-			result = await users.saveAccout(user);
-			if (result > 0) {
-				setState(() => _isSubmitting = false);
-				dialog();
-			} else  {
-				setState(() => _isSubmitting = false);
-				_showAlertDialog('Warning', 'Problem saving user');
-			}
+			setState(() => _isSubmitting = false);
+			// print(responseData);
+      final String errorMsg = responseData['error'];
+		  _showAlertDialog('Error', errorMsg);
 		}
   }
+
+	void _saveLocalDB() async {
+		user.date = DateFormat("yyyy-MM-dd hh:mm:ss").format(DateTime.now());
+		int result = await users.saveAccout(user);
+		if (result == 1) {
+			_showAlertDialog('Warning', 'Account already exist');
+		} else {
+			result > 0 ? dialog() : _showAlertDialog('Warning', 'Problem saving user');
+		}
+	}
 
 	void _showAlertDialog(title, message) {
     AlertDialog alertDialog = AlertDialog(title: Text(title), content: Text(message));
@@ -276,13 +297,23 @@ class _RegisterState extends State<Register> {
 	}
 
 	void _confirmAccount() async {
-		int result = await users.confirmAccount(user);
-		if (result > 0) {
-			_formKey.currentState.reset();
-			 _redirectLogin();
-		 } else {
-			 _showAlertDialog('Warning', 'Problem Confirming Account');
-		 }
+    var data = { "phone" : _phone };
+
+    http.Response response = await http.post(SIGNUP_CONFIRMED, body: data);
+    final responseData = json.decode(response.body);
+
+    if (response.statusCode == 200) {
+			int result = await users.confirmAccount(user);
+			if (result > 0) {
+				_formKey.currentState.reset();
+				_redirectLogin();
+			} else {
+				_showAlertDialog('Warning', 'Problem Confirming Account');
+			}
+		} else {
+      final String errorMsg = responseData['error'];
+    	_showAlertDialog('Error', errorMsg);
+		}
   }
 
 	void navigatePreviousPage() => Navigator.pushReplacementNamed(context, '/login');

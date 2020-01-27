@@ -13,8 +13,18 @@ class UsersController {
 	// Save Operation: Update, not exist insert user object to database
 	Future<int> saveAccout(User user) async {
 		Database db = await connect.database;
-		int result = await db.update(tblUsers, user.toMap(), where: 'phone = ?', whereArgs: [user.phone]);
-		if (result == 0) result = await db.insert(tblUsers, user.toMap());
+		int result = await db.rawUpdate('Update $tblUsers Set confirm=1 Where confirm=1 and phone = ?', [user.phone]);
+		if (result > 0) {
+				result = 1;
+		} else {
+			result = await db.update(tblUsers, user.toMap(), where: 'phone = ?', whereArgs: [user.phone]);
+			if (result == 0) {
+				await db.insert(tblUsers, user.toMap());
+				result = 2;
+			} else {
+				result = 3;
+			}
+		}
 		return result;
 	}
 
