@@ -1,14 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:password/password.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
-
-import 'package:flutter/cupertino.dart';
+import 'package:password/password.dart';
+import 'package:progress_dialog/progress_dialog.dart';
 
 import '../../models/user.dart';
 import '../../controller/users_controller.dart';
@@ -24,13 +22,21 @@ class Register extends StatefulWidget {
 class _RegisterState extends State<Register> {
   var _formKey = GlobalKey<FormState>();
 
-	User user = User('', '', '', '', '', '', '', 0);
+	ProgressDialog prgrsDlg;
 
+	User user = User('', '', '', '', '', '', '', 0);
 
 	UsersController users = UsersController();
 	RegistrationUtilities register = RegistrationUtilities();
 
-	String _phone, _studentId, _name, _email, _password, _pin, _confirmationCode;
+	final _phone = TextEditingController();
+	final _studentId = TextEditingController();
+	final _name = TextEditingController();
+	final _email = TextEditingController();
+	final _password = TextEditingController();
+	final _pin =  TextEditingController();
+
+	String _confirmationCode;
 
 	bool passwordVisible, pinVisible, _isSubmitting;
 	bool _autoValidate = false;
@@ -43,8 +49,32 @@ class _RegisterState extends State<Register> {
     _isSubmitting = false;
 	}
 
+  void dispose() {
+    super.dispose();
+		_phone.dispose();
+		_studentId.dispose();
+		_name.dispose();
+		_email.dispose();
+		_password.dispose();
+		_pin.dispose();
+	}
+
   @override
   Widget build(BuildContext context) {
+
+		prgrsDlg = ProgressDialog(context);
+    prgrsDlg.style(
+			message: 'Please Waiting...',
+			borderRadius: 10.0,
+			backgroundColor: Colors.white,
+			progressWidget: CircularProgressIndicator(),
+			elevation: 10.0,
+			insetAnimCurve: Curves.easeInOut,
+			progress: 0.0,
+			maxProgress: 100.0,
+			progressTextStyle: TextStyle(color: Colors.black, fontSize: 13.0, fontWeight: FontWeight.w400),
+			messageTextStyle: TextStyle(color: Colors.black, fontSize: 19.0, fontWeight: FontWeight.w600)
+		);
 
 		return WillPopScope(
 			onWillPop: () { navigatePreviousPage(); },
@@ -69,13 +99,13 @@ class _RegisterState extends State<Register> {
 											child: Column(
 												mainAxisAlignment: MainAxisAlignment.center,
 												children: <Widget>[
-													textPage('Create a New Profile'),
-													textFormField(Icons. phone_android, 'Phone Number', 'Enter Phone Number', TextInputType.number, false),
-													textFormField(Icons.perm_identity, 'School ID', 'Enter School ID Number', TextInputType.number, false),
-													textFormField(Icons.person, 'Name', 'Enter Full Name', TextInputType.text, false),
-													textFormField(Icons.email, 'Email', 'Enter Email Address', TextInputType.emailAddress, false),
-													textFormField(Icons.lock, 'Password', 'Enter a Password', TextInputType.text, passwordVisible),
-													textFormField(Icons.vpn_key, 'Pin', 'Enter a Pin for payment', TextInputType.number, pinVisible),
+													textPage('Registration'),
+													textFormField(_phone, Icons. phone_android, 'Phone Number', 'Enter Phone Number', TextInputType.number, false),
+													textFormField(_studentId, Icons.perm_identity, 'School ID', 'Enter School ID Number', TextInputType.number, false),
+													textFormField(_name, Icons.person, 'Name', 'Enter Full Name', TextInputType.text, false),
+													textFormField(_email, Icons.email, 'Email', 'Enter Email Address', TextInputType.emailAddress, false),
+													textFormField(_password, Icons.lock, 'Password', 'Enter a Password', TextInputType.text, passwordVisible),
+													textFormField(_pin, Icons.vpn_key, 'Pin', 'Enter a Pin for payment', TextInputType.number, pinVisible),
 													signupButton('Sign Up'),
 												],
 											),
@@ -95,15 +125,16 @@ class _RegisterState extends State<Register> {
     child: Text(lblText, style: TextStyle(fontSize: 18),)
   );
 
-  Widget textFormField(icnText, lblText, hntText, keyType, blnObscure) => Padding(
+  Widget textFormField(txtController, icnText, lblText, hntText, keyType, blnObscure) => Padding(
     padding: const EdgeInsets.only(top: 10, bottom: 8),
     child: TextFormField(
+			autofocus: lblText == 'Phone Number' ? true : false,
+			controller: txtController,
       keyboardType: keyType,
 			inputFormatters: keyType == TextInputType.number
 				? <TextInputFormatter>[WhitelistingTextInputFormatter.digitsOnly]
 				: null,
 			obscureText: blnObscure,
-      onSaved: (value) => updateTextFormField(lblText, value),
       validator: (value) => textValidation(lblText, value),
       decoration: InputDecoration(
 				labelText: lblText,
@@ -115,26 +146,23 @@ class _RegisterState extends State<Register> {
   );
 
   Widget signupButton(txtSignup) {
-    return _isSubmitting
-      ? CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation(Theme.of(context).primaryColor)
-        )
-      : Padding(
-          padding: const EdgeInsets.only(top: 2, left: 220),
-          child: RaisedButton(
-            color: Colors.greenAccent,
-            child: Text(txtSignup),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            onPressed: _submit
-          )
-        );
+		return _isSubmitting
+		? Container()
+		: Padding(
+			padding: const EdgeInsets.only(top: 2, left: 220),
+			child: RaisedButton(
+				color: Colors.greenAccent,
+				child: Text(txtSignup),
+				shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+				onPressed: () { setState(() { _submit(); }); }
+			)
+		);
   }
 
   // Functions
 	void _submit() {
 		final form = _formKey.currentState;
 		if (form.validate()) {
-			form.save();
 			_registerUser();
 		} else {
 			setState(() => _autoValidate = true);
@@ -184,68 +212,56 @@ class _RegisterState extends State<Register> {
 		}
 	}
 
-  void updateTextFormField(lblText, txtValue) {
-    switch (lblText) {
-      case 'Phone Number':
-				_phone = txtValue;
-				user.phone = txtValue;
-				break;
-      case 'School ID':
-				_studentId = txtValue;
-				user.studentId = txtValue;
-				break;
-      case 'Name':
-				_name = txtValue;
-        user.name = txtValue;
-				break;
-      case 'Email':
-				_email = txtValue;
-        user.email = txtValue;
-				break;
-      case 'Password':
-				_password = Password.hash(txtValue, PBKDF2());
-        user.password = _password;
-				break;
-      case 'Pin':
-				_pin = Password.hash(txtValue, PBKDF2());
-				user.pin = _pin;
-				break;
-    }
-  }
-
   void _registerUser() async {
+		setState(() => _isSubmitting = true);
+		prgrsDlg.show();
+
     var data = {
-				"phone"			: _phone,
-				"studentId"	: _studentId,
-				"name"			: _name,
-				"email"			: _email,
-				"password"	: _password,
-				"pin"				: _pin
+				"phone"			: _phone.text,
+				"studentId"	: _studentId.text,
+				"name"			: _name.text,
+				"email"			: _email.text,
+				"password"	: Password.hash(_password.text, PBKDF2()),
+				"pin"				: Password.hash(_pin.text, PBKDF2())
 		};
 
-		setState(() => _isSubmitting = true);
   	http.Response response = await http.post(USER_SIGNUP, body: data);
     final responseData = json.decode(response.body);
-
     if (response.statusCode == 200) {
-			setState(() => _isSubmitting = false);
 			var result = responseData['result'];
-			result == 1 ?	_showAlertDialog('Warning', 'Account already exist') : _saveLocalDB();
+			if (result == 1) {
+				progressIndicatorComplete(result,'Account already exist');
+			} else {
+				_saveLocalDB();
+			}
 		} else {
-			setState(() => _isSubmitting = false);
-			// print(responseData);
-      final String errorMsg = responseData['error'];
-		  _showAlertDialog('Error', errorMsg);
+			final String errorMsg = responseData['error'];
+			progressIndicatorComplete(0, errorMsg);
 		}
   }
 
+	void progressIndicatorComplete(result, messege) {
+		Future.delayed(Duration(seconds: 2)).then((value) {
+			prgrsDlg.hide().whenComplete(() {
+				setState(() => _isSubmitting = false);
+				(result > 1) ? dialog() : _showAlertDialog((result > 0) ? 'Warning' : 'Error',  messege);
+			});
+		});
+	}
+
 	void _saveLocalDB() async {
 		user.date = DateFormat("yyyy-MM-dd hh:mm:ss").format(DateTime.now());
+  	user.phone     = _phone.text;
+		user.studentId = _studentId.text;
+		user.name      = _name.text;
+		user.email     = _email.text;
+		user.password  = _password.text;
+		user.pin       = _pin.text;
 		int result = await users.saveAccout(user);
 		if (result == 1) {
-			_showAlertDialog('Warning', 'Account already exist');
+			progressIndicatorComplete(result, 'Account already exist');
 		} else {
-			result > 0 ? dialog() : _showAlertDialog('Warning', 'Problem saving user');
+			progressIndicatorComplete(result, 'Problem saving user');
 		}
 	}
 
@@ -255,7 +271,7 @@ class _RegisterState extends State<Register> {
   }
 
   dialog() {
-		String genCode = register.generateConfirmationCode(_phone, _password);
+		String genCode = register.generateConfirmationCode(_phone.text, _password.text);
 		return showDialog(
 			context: context,
 			builder: (BuildContext context) => AlertDialog(
@@ -275,6 +291,7 @@ class _RegisterState extends State<Register> {
 					],
 				),
 				content: TextField(
+					autofocus: true,
 					onChanged: (value) { _confirmationCode = value; },
 					decoration: InputDecoration(
 						hintText: 'Enter Confirmation Code',
@@ -297,7 +314,7 @@ class _RegisterState extends State<Register> {
 	}
 
 	void _confirmAccount() async {
-    var data = { "phone" : _phone };
+    var data = { "phone" : _phone.text };
 
     http.Response response = await http.post(SIGNUP_CONFIRMED, body: data);
     final responseData = json.decode(response.body);
@@ -308,7 +325,7 @@ class _RegisterState extends State<Register> {
 				_formKey.currentState.reset();
 				_redirectLogin();
 			} else {
-				_showAlertDialog('Warning', 'Problem Confirming Account');
+				_showAlertDialog('Warning', 'Problem confirming account');
 			}
 		} else {
       final String errorMsg = responseData['error'];
