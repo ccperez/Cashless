@@ -1,10 +1,15 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:http/http.dart' as http;
+import 'package:password/password.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../models/user.dart';
 import '../../services/response/login_response.dart';
+import '../../utilities/registration_utilities.dart';
+import '../../global.dart';
 
 import '../../pages/dashboard/dashboard.dart';
 
@@ -19,6 +24,7 @@ class _LoginPageState extends State<LoginPage> implements LoginCallBack {
 	User user = User('', '', '', '', '', '', '', 0);
 
 	LoginStatus _loginStatus = LoginStatus.notSignIn;
+	RegistrationUtilities register = RegistrationUtilities();
 
   bool _isLoading = false;
 
@@ -45,20 +51,18 @@ class _LoginPageState extends State<LoginPage> implements LoginCallBack {
 	@override
   void onLoginError(String error) {
     setState(() => _isLoading = false);
-		_showSnackBar(error);
-
+		register.snackBarShow(scaffoldKey, error);
   }
 
   @override
   void onLoginSuccess(User user) async {
 
     if (user != null) {
-      savePref(1, user.phone);
+      register.savePref(1, user.phone, setState);
       _loginStatus = LoginStatus.signIn;
     } else {
       setState(() => _isLoading = false);
-			_showSnackBar("Can't login invalid Phone or Password");
-
+			register.snackBarShow(scaffoldKey, "Invalid credentials");
     }
   }
 
@@ -166,7 +170,7 @@ class _LoginPageState extends State<LoginPage> implements LoginCallBack {
 							if (form.validate()) {
 								setState(() => _isLoading = true);
 								form.save();
-								_response.doLogin(_phone, _password);
+								_signIn();
 							} else {
 								setState(() => _autoValidate = true);
 							}
@@ -176,21 +180,43 @@ class _LoginPageState extends State<LoginPage> implements LoginCallBack {
 	}
 
 	// Functions
-  textValidation(hntText, value) {
-		var errorMessages;
-		if (value.isEmpty) {
-			errorMessages = '$hntText should not be empty';
+	void _signIn() async {
+    var data = {
+			"phone"    : _phone,
+			"password" : Password.hash(_password, PBKDF2())
+		};
+
+    http.Response response = await http.post(USER_SIGNIN, body: data);
+    final responseData = json.decode(response.body);
+
+    if (response.statusCode == 200) {
+			int result = responseData['result'];
+			if (result == 1) {
+				_response.doLogin(_phone, _password);
+			} else if (result == 3) {
+				setState(() => _isLoading = false);
+				register.dialog(context, 'Account not yet confirmed', user, _phone,  _password, setState);
+			}
 		} else {
-			switch (hntText){
+			setState(() => _isLoading = false);
+      String error = responseData['error'];
+    	register.snackBarShow(scaffoldKey, error);
+		}
+  }
+
+  textValidation(hntText, value) {
+		if (value.isEmpty) {
+			return '$hntText should not be empty';
+		} else {
+			switch (hntText) {
 				case 'Phone Number':
-					if (value.length < 11) errorMessages = 'Phone Number should be 11 digits';
+					if (value.length < 11) return '$hntText should be 11 digits';
 					break;
 				case 'Password':
-					if (value.length < 6) errorMessages = 'Password must be 6 characters or longer';
+					if (value.length < 6) return '$hntText must be 6 characters or longer';
 					break;
 			}
 		}
-		return errorMessages;
   }
 
   void updateTextFormField(lblText, txtValue) {
@@ -205,17 +231,10 @@ class _LoginPageState extends State<LoginPage> implements LoginCallBack {
 		SharedPreferences preferences = await SharedPreferences.getInstance();
 		setState(() {
 			signIn = preferences.getInt("signIn");
+			_phone = preferences.getString("phone");
 			_loginStatus = signIn == 1 ? LoginStatus.signIn : LoginStatus.notSignIn;
 		});
 	}
-
-  savePref(int signIn,String phone) async {
-    SharedPreferences preferences = await SharedPreferences.getInstance();
-    setState(() {
-      preferences.setInt("signIn", signIn);
-      preferences.setString("phone", phone);
-    });
-  }
 
 	signOut() async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
@@ -224,12 +243,6 @@ class _LoginPageState extends State<LoginPage> implements LoginCallBack {
       preferences.setInt("signIn", null);
       _loginStatus = LoginStatus.notSignIn;
     });
-  }
-
-	void _showSnackBar(String text) {
-    scaffoldKey.currentState.showSnackBar(SnackBar(
-      content: Text(text),
-    ));
   }
 
   forgotPassDialog() => showDialog(

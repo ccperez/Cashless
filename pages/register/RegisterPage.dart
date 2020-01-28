@@ -36,8 +36,6 @@ class _RegisterState extends State<Register> {
 	final _password = TextEditingController();
 	final _pin =  TextEditingController();
 
-	String _confirmationCode;
-
 	bool passwordVisible, pinVisible, _isSubmitting;
 	bool _autoValidate = false;
 
@@ -77,13 +75,13 @@ class _RegisterState extends State<Register> {
 		);
 
 		return WillPopScope(
-			onWillPop: () { navigatePreviousPage(); },
+			onWillPop: () { register.navigatePreviousPage(context); },
 			child: Scaffold(
 				appBar: AppBar(
 					title: Text('SmartPay'),
 					backgroundColor: Colors.green[900],
           leading: IconButton(icon: Icon(Icons.arrow_back),
-            onPressed: () { navigatePreviousPage(); }
+            onPressed: () { register.navigatePreviousPage(context); }
           )
 				),
 				body: Form(
@@ -240,11 +238,13 @@ class _RegisterState extends State<Register> {
 		}
   }
 
-	void progressIndicatorComplete(result, messege) {
+	void progressIndicatorComplete(result, message) {
 		Future.delayed(Duration(seconds: 2)).then((value) {
 			prgrsDlg.hide().whenComplete(() {
 				setState(() => _isSubmitting = false);
-				(result > 1) ? dialog() : _showAlertDialog((result > 0) ? 'Warning' : 'Error',  messege);
+				(result > 1)
+				? register.dialog(context, 'Thank you for signing up', user, _phone.text,  _password.text, setState)
+				: register.showAlertDialog(context, (result > 0) ? 'Warning' : 'Error',  message);
 			});
 		});
 	}
@@ -264,77 +264,5 @@ class _RegisterState extends State<Register> {
 			progressIndicatorComplete(result, 'Problem saving user');
 		}
 	}
-
-	void _showAlertDialog(title, message) {
-    AlertDialog alertDialog = AlertDialog(title: Text(title), content: Text(message));
-    showDialog(context: context, builder: (_) => alertDialog);
-  }
-
-  dialog() {
-		String genCode = register.generateConfirmationCode(_phone.text, _password.text);
-		return showDialog(
-			context: context,
-			builder: (BuildContext context) => AlertDialog(
-				shape: RoundedRectangleBorder(
-					borderRadius: BorderRadius.circular(20),
-				),
-				backgroundColor: Colors.grey[100],
-				title: Column(
-					children: <Widget>[
-						Text('Thank you for signing up', textAlign: TextAlign.center, style: TextStyle(fontSize: 18)),
-						Padding(
-							padding: const EdgeInsets.only(top: 5.0),
-							child: Text('To complete the process please enter confirmation code: $genCode',
-								textAlign: TextAlign.center, style: TextStyle(fontSize: 16, color: Colors.red)
-							),
-						)
-					],
-				),
-				content: TextField(
-					autofocus: true,
-					onChanged: (value) { _confirmationCode = value; },
-					decoration: InputDecoration(
-						hintText: 'Enter Confirmation Code',
-						hintStyle: TextStyle(fontSize: 12),
-						prefixIcon: Icon(Icons.code),
-						enabledBorder: OutlineInputBorder(
-							borderRadius: BorderRadius.circular(12)
-						),
-					),
-				),
-				actions: <Widget>[
-					FlatButton(
-						child: Text('Submit'),
-						onPressed: () =>
-							(_confirmationCode == genCode) ? _confirmAccount() : _showAlertDialog('Warning', 'Invalid Confirmation Code'),
-					),
-				],
-			),
-		);
-	}
-
-	void _confirmAccount() async {
-    var data = { "phone" : _phone.text };
-
-    http.Response response = await http.post(SIGNUP_CONFIRMED, body: data);
-    final responseData = json.decode(response.body);
-
-    if (response.statusCode == 200) {
-			int result = await users.confirmAccount(user);
-			if (result > 0) {
-				_formKey.currentState.reset();
-				_redirectLogin();
-			} else {
-				_showAlertDialog('Warning', 'Problem confirming account');
-			}
-		} else {
-      final String errorMsg = responseData['error'];
-    	_showAlertDialog('Error', errorMsg);
-		}
-  }
-
-	void navigatePreviousPage() => Navigator.pushReplacementNamed(context, '/login');
-
-	void _redirectLogin() => Future.delayed(Duration(seconds: 2), () => navigatePreviousPage());
 
 }
