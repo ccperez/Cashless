@@ -31,7 +31,7 @@ class RegistrationUtilities {
 		return confirmationCode.substring(confirmationCode.length-8);
 	}
 
- dialog(context, textCaption, user, phone,  password, setState) {
+ dialog(context, textCaption, phone,  password, setState) {
 		String genCode = generateConfirmationCode(phone, password);
 		return showDialog(
 			context: context,
@@ -68,7 +68,7 @@ class RegistrationUtilities {
 						child: Text('Submit'),
 						onPressed: () =>
 							(_confirmationCode == genCode)
-							? confirmAccount(context, user, phone, setState)
+							? confirmAccount(context, phone, setState)
 							: showAlertDialog(context, 'Warning', 'Invalid Confirmation Code'),
 					),
 				],
@@ -76,14 +76,14 @@ class RegistrationUtilities {
 		);
 	}
 
-	void confirmAccount(context, user, phone, setState) async {
+	void confirmAccount(context, phone, setState) async {
     var data = { "phone" : phone };
 
     http.Response response = await http.post(SIGNUP_CONFIRMED, body: data);
     final responseData = json.decode(response.body);
 
     if (response.statusCode == 200) {
-			int result = await users.confirmAccount(user);
+			int result = await users.confirmAccount(phone);
 			if (result > 0) {
 				savePref(1, phone, setState);
 				redirectLogin(context);
@@ -91,8 +91,7 @@ class RegistrationUtilities {
 				showAlertDialog(context, 'Warning', 'Problem confirming account');
 			}
 		} else {
-      final String errorMsg = responseData['error'];
-      showAlertDialog(context, 'Error', errorMsg);
+      showAlertDialog(context, 'Error', responseData['error']);
 		}
   }
 

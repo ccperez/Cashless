@@ -195,12 +195,11 @@ class _LoginPageState extends State<LoginPage> implements LoginCallBack {
 				_response.doLogin(_phone, _password);
 			} else if (result == 3) {
 				setState(() => _isLoading = false);
-				register.dialog(context, 'Account not yet confirmed', user, _phone,  _password, setState);
+				register.dialog(context, 'Account not yet confirmed', _phone,  _password, setState);
 			}
 		} else {
 			setState(() => _isLoading = false);
-      String error = responseData['error'];
-    	register.snackBarShow(scaffoldKey, error);
+    	register.snackBarShow(scaffoldKey, responseData['error']);
 		}
   }
 

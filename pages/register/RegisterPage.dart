@@ -188,24 +188,18 @@ class _RegisterState extends State<Register> {
 			switch (lblText) {
 				case 'Phone Number':
 					return value.length < 11 ? 'Phone Number must be 11 digits' : null;
-					break;
 				case 'School ID':
 					return value.length < 6 ? 'School ID must be 6 digits' : null;
-					break;
 				case 'Name':
 					return !value.contains(' ') ? 'Invalid Full Name' : null;
-					break;
 				case 'Email':
 					Pattern pattern = r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
 					RegExp regex = RegExp(pattern);
 					return !regex.hasMatch(value) ? 'Invalid Email' : null;
-					break;
 				case 'Password':
 					return value.length < 6 ? 'Password must be 6 characters or longer' : null;
-					break;
 				case 'Pin':
 					return value.length < 6 ? 'Pin must be 6 digits or longer' : null;
-					break;
 			}
 		}
 	}
@@ -228,26 +222,14 @@ class _RegisterState extends State<Register> {
     if (response.statusCode == 200) {
 			var result = responseData['result'];
 			if (result == 1) {
-				progressIndicatorComplete(result,'Account already exist');
+				progressIndicatorComplete(result, 'Account already exist');
 			} else {
 				_saveLocalDB();
 			}
 		} else {
-			final String errorMsg = responseData['error'];
-			progressIndicatorComplete(0, errorMsg);
+			progressIndicatorComplete(0, responseData['error']);
 		}
   }
-
-	void progressIndicatorComplete(result, message) {
-		Future.delayed(Duration(seconds: 2)).then((value) {
-			prgrsDlg.hide().whenComplete(() {
-				setState(() => _isSubmitting = false);
-				(result > 1)
-				? register.dialog(context, 'Thank you for signing up', user, _phone.text,  _password.text, setState)
-				: register.showAlertDialog(context, (result > 0) ? 'Warning' : 'Error',  message);
-			});
-		});
-	}
 
 	void _saveLocalDB() async {
 		user.date = DateFormat("yyyy-MM-dd hh:mm:ss").format(DateTime.now());
@@ -263,6 +245,17 @@ class _RegisterState extends State<Register> {
 		} else {
 			progressIndicatorComplete(result, 'Problem saving user');
 		}
+	}
+
+	void progressIndicatorComplete(result, message) {
+		Future.delayed(Duration(seconds: 2)).then((value) {
+			prgrsDlg.hide().whenComplete(() {
+				setState(() => _isSubmitting = false);
+				(result > 1)
+				? register.dialog(context, 'Thank you for signing up', _phone.text,  _password.text, setState)
+				: register.showAlertDialog(context, (result > 0) ? 'Warning' : 'Error',  message);
+			});
+		});
 	}
 
 }
