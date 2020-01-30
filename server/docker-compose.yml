@@ -16,7 +16,7 @@ services:
       POSTGRES_PASSWORD: ${PG_PSWD}
 
   pgadmin:
-    build: api/pgadmin/.
+    build: pgadmin/.
     ports:
       - ${PGADMD_PORT}:80
     volumes:
