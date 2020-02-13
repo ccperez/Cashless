@@ -62,7 +62,7 @@ class _RegisterState extends State<Register> {
 
 		prgrsDlg = ProgressDialog(context);
     prgrsDlg.style(
-			message: 'Please Waiting...',
+			message: 'Please Wait...',
 			borderRadius: 10.0,
 			backgroundColor: Colors.white,
 			progressWidget: CircularProgressIndicator(),
@@ -79,6 +79,7 @@ class _RegisterState extends State<Register> {
 			child: Scaffold(
 				appBar: AppBar(
 					title: Text('SmartPay'),
+          centerTitle: true,
 					backgroundColor: Colors.green[900],
           leading: IconButton(icon: Icon(Icons.arrow_back),
             onPressed: () { register.navigatePreviousPage(context); }
@@ -97,14 +98,14 @@ class _RegisterState extends State<Register> {
 											child: Column(
 												mainAxisAlignment: MainAxisAlignment.center,
 												children: <Widget>[
-													textPage('Registration'),
-													textFormField(_phone, Icons. phone_android, 'Phone Number', 'Enter Phone Number', TextInputType.number, false),
+													textPage('Registration', TextStyle(fontSize: 18, fontWeight: FontWeight.w500)),
+													textFormField(_phone, Icons. phone_android, 'Phone Number', 'Enter Phone Number', TextInputType.phone, false),
 													textFormField(_studentId, Icons.perm_identity, 'School ID', 'Enter School ID Number', TextInputType.number, false),
 													textFormField(_name, Icons.person, 'Name', 'Enter Full Name', TextInputType.text, false),
 													textFormField(_email, Icons.email, 'Email', 'Enter Email Address', TextInputType.emailAddress, false),
 													textFormField(_password, Icons.lock, 'Password', 'Enter a Password', TextInputType.text, passwordVisible),
 													textFormField(_pin, Icons.vpn_key, 'Pin', 'Enter a Pin for payment', TextInputType.number, pinVisible),
-													signupButton('Sign Up'),
+													signupButton('Sign Up', TextStyle(fontSize: 25, fontWeight: FontWeight.w300)),
 												],
 											),
 										),
@@ -118,9 +119,9 @@ class _RegisterState extends State<Register> {
 		);
   }
 
-  Widget textPage(lblText) => Padding(
+  Widget textPage(lblText, styleText) => Padding(
     padding: const EdgeInsets.only(top: 20),
-    child: Text(lblText, style: TextStyle(fontSize: 18),)
+    child: Text(lblText, style: styleText)
   );
 
   Widget textFormField(txtController, icnText, lblText, hntText, keyType, blnObscure) => Padding(
@@ -143,17 +144,21 @@ class _RegisterState extends State<Register> {
     ),
   );
 
-  Widget signupButton(txtSignup) {
+  Widget signupButton(buttonText, styleText) {
 		return _isSubmitting
 		? Container()
 		: Padding(
-			padding: const EdgeInsets.only(top: 2, left: 220),
-			child: RaisedButton(
-				color: Colors.greenAccent,
-				child: Text(txtSignup),
-				shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-				onPressed: () { setState(() { _submit(); }); }
-			)
+			padding: const EdgeInsets.only(top: 30),
+      child: Material(
+            color: Colors.green,
+            borderRadius: BorderRadius.circular(10),
+            child: InkWell(
+              onTap: _submit,
+              child: Center(
+                child: Text(buttonText, style: styleText,),
+              ),
+            ),
+          ),
 		);
   }
 
@@ -170,7 +175,7 @@ class _RegisterState extends State<Register> {
 	_suffixIcon(lblText, blnObscure) {
 		if (lblText == 'Password' || lblText == 'Pin') {
 			return IconButton(
-				icon: Icon(blnObscure ? Icons.visibility : Icons.visibility_off),
+				icon: Icon(blnObscure ? Icons.visibility_off : Icons.visibility),
 				onPressed: () {
 					lblText == 'Password'
 						? setState(() => passwordVisible = !passwordVisible)
@@ -187,19 +192,19 @@ class _RegisterState extends State<Register> {
 		} else {
 			switch (lblText) {
 				case 'Phone Number':
-					return value.length < 11 ? 'Phone Number must be 11 digits' : null;
+					return value.length < 11 ? '$lblText must be 11 digits' : null;
 				case 'School ID':
-					return value.length < 6 ? 'School ID must be 6 digits' : null;
+					return value.length < 6 ? '$lblText must be 6 digits' : null;
 				case 'Name':
-					return !value.contains(' ') ? 'Invalid Full Name' : null;
+					return !value.contains(' ') ? 'Invalid Full $lblText' : null;
 				case 'Email':
 					Pattern pattern = r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
 					RegExp regex = RegExp(pattern);
-					return !regex.hasMatch(value) ? 'Invalid Email' : null;
+					return !regex.hasMatch(value) ? 'Invalid $lblText' : null;
 				case 'Password':
-					return value.length < 6 ? 'Password must be 6 characters or longer' : null;
+					return value.length < 6 ? '$lblText must be 6 characters or longer' : null;
 				case 'Pin':
-					return value.length < 6 ? 'Pin must be 6 digits or longer' : null;
+					return value.length < 6 ? '$lblText must be 6 digits or longer' : null;
 			}
 		}
 	}
@@ -252,7 +257,7 @@ class _RegisterState extends State<Register> {
 			prgrsDlg.hide().whenComplete(() {
 				setState(() => _isSubmitting = false);
 				(result > 1)
-				? register.dialog(context, 'Thank you for signing up', _phone.text,  _password.text, setState)
+				? register.dialog(context, 'Thank you for signing up', setState, _phone.text,  _password.text)
 				: register.showAlertDialog(context, (result > 0) ? 'Warning' : 'Error',  message);
 			});
 		});
