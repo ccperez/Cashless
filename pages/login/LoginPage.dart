@@ -58,7 +58,7 @@ class _LoginPageState extends State<LoginPage> implements LoginCallBack {
   void onLoginSuccess(User user) async {
 
     if (user != null) {
-      register.savePref(1, user.phone, setState);
+      register.savePref(setState, 1, user.phone);
       _loginStatus = LoginStatus.signIn;
     } else {
       setState(() => _isLoading = false);
@@ -74,6 +74,7 @@ class _LoginPageState extends State<LoginPage> implements LoginCallBack {
 				break;
     	default:
 				return Scaffold(
+          //backgroundColor: Colors.green[900],
 					key: scaffoldKey,
 					body: Form(
 						key: _formKey,
@@ -95,10 +96,10 @@ class _LoginPageState extends State<LoginPage> implements LoginCallBack {
 															mainAxisAlignment: MainAxisAlignment.spaceBetween,
 															children: <Widget>[
 																linkButton('Sign Up', () => navigatePage('/register')),
-																linkButton('Forgot Password?', () => forgotPassDialog()),
+																linkButton('Forgot Password?', () => navigatePage('/forgetPassword')),
 															],
 														),
-														loginButton('Sign In'),
+														loginButton('Sign In', TextStyle(fontSize: 25, fontWeight: FontWeight.w300)),
 													],
 												),
 											),
@@ -128,7 +129,7 @@ class _LoginPageState extends State<LoginPage> implements LoginCallBack {
 
 
   Widget textFormField(icnText, hntText, keyType) => Padding(
-    padding: const EdgeInsets.only(left: 20, right: 20, top: 15,),
+    padding: const EdgeInsets.only(left: 20, right: 20, top: 20,),
     child: TextFormField(
       keyboardType: keyType,
 			inputFormatters: keyType == TextInputType.number
@@ -142,7 +143,7 @@ class _LoginPageState extends State<LoginPage> implements LoginCallBack {
         prefixIcon: Icon(icnText, color: Colors.grey),
         suffixIcon: hntText == 'Password'
 					? IconButton(
-							icon: Icon(passwordVisible ? Icons.visibility : Icons.visibility_off),
+							icon: Icon(passwordVisible ? Icons.visibility_off : Icons.visibility),
 							onPressed: () => setState(() => passwordVisible = !passwordVisible)
 						)
 					: Icon(Icons.phone_android),
@@ -154,32 +155,39 @@ class _LoginPageState extends State<LoginPage> implements LoginCallBack {
   );
 
   // Login Button
-  Widget loginButton(txtLogin) {
+  Widget loginButton(buttonText, styleText) {
 		return _isLoading
       ? CircularProgressIndicator(
           valueColor: AlwaysStoppedAnimation(Theme.of(context).primaryColor)
         )
       : Padding(
-					padding: const EdgeInsets.only(top: 15),
-					child: RaisedButton(
-						shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-						color: Colors.greenAccent,
-						child: Text(txtLogin),
-						onPressed: () {
-							var form = _formKey.currentState;
-							if (form.validate()) {
-								setState(() => _isLoading = true);
-								form.save();
-								_signIn();
-							} else {
-								setState(() => _autoValidate = true);
-							}
-						}
-					)
+					padding: const EdgeInsets.only(top: 20, left: 15, right: 15),
+          child: Material(
+            color: Colors.green,
+            borderRadius: BorderRadius.circular(10),
+            child: InkWell(
+              onTap: _submit,
+              child: Center(
+                child: Text(buttonText, style: styleText),
+              ),
+            ),
+          ),
 				);
 	}
 
+
 	// Functions
+  void _submit() {
+    var form = _formKey.currentState;
+    if (form.validate()) {
+      setState(() => _isLoading = true);
+      form.save();
+      _signIn();
+    } else {
+      setState(() => _autoValidate = true);
+		}
+  }
+
 	void _signIn() async {
     var data = {
 			"phone"    : _phone,
@@ -195,7 +203,7 @@ class _LoginPageState extends State<LoginPage> implements LoginCallBack {
 				_response.doLogin(_phone, _password);
 			} else if (result == 3) {
 				setState(() => _isLoading = false);
-				register.dialog(context, 'Account not yet confirmed', _phone,  _password, setState);
+				register.dialog(context, 'Account not yet confirmed', setState, _phone,  _password);
 			}
 		} else {
 			setState(() => _isLoading = false);
@@ -209,11 +217,9 @@ class _LoginPageState extends State<LoginPage> implements LoginCallBack {
 		} else {
 			switch (hntText) {
 				case 'Phone Number':
-					if (value.length < 11) return '$hntText should be 11 digits';
-					break;
+					return (value.length < 11) ? '$hntText should be 11 digits' : null;
 				case 'Password':
-					if (value.length < 6) return '$hntText must be 6 characters or longer';
-					break;
+					return (value.length < 6) ? '$hntText must be 6 characters or longer' : null;
 			}
 		}
   }
@@ -244,44 +250,4 @@ class _LoginPageState extends State<LoginPage> implements LoginCallBack {
     });
   }
 
-  forgotPassDialog() => showDialog(
-		context: context,
-		builder: (BuildContext context) => AlertDialog(
-			shape: RoundedRectangleBorder(
-				borderRadius: BorderRadius.circular(20),
-			),
-			backgroundColor: Colors.grey[100],
-			title: Column(
-				children: <Widget>[
-					Text('We sent you a Confirmation Code',
-						textAlign: TextAlign.center,
-						style: TextStyle(fontSize: 18, fontStyle: FontStyle.italic),
-					),
-					Padding(
-						padding: const EdgeInsets.only(top: 8.0),
-						child: Text('Please Check your Inbox',
-							textAlign: TextAlign.center,
-							style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic)
-						)
-					)
-				]
-			),
-			content: TextField(
-				decoration: InputDecoration(
-					hintText: 'Enter Confirmation Code',
-					hintStyle: TextStyle(fontSize: 12),
-					prefixIcon: Icon(Icons.code),
-					enabledBorder: OutlineInputBorder(
-						borderRadius: BorderRadius.circular(12)
-					),
-				),
-			),
-			actions: <Widget>[
-				FlatButton(
-					child: Text('OKAY'),
-					onPressed: () => navigatePage('/forgetpassword')
-				),
-			],
-		),
-	);
 }

@@ -39,10 +39,10 @@ class DatabaseHelper {
 			'  studentId TEXT,'
 			'  name 		 TEXT,'
 			'  email 		 TEXT,'
-			'  password  TEXT,'
+			'  password 		 TEXT,'
 			'  pin 			 TEXT,'
 			'  date 		 TEXT,'
-			'  confirm INTEGER'
+			'  confirm 	       INTEGER'
 			');'
 		);
 	}

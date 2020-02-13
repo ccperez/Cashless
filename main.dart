@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import './pages/login/LoginPage.dart';
 import './pages/register/RegisterPage.dart';
 import './pages/forget/ForgetPassword.dart';
+import './pages/forget/ResetPassword.dart';
 
 import './pages/list/user_list.dart';
 
@@ -18,8 +19,10 @@ class MyApp extends StatelessWidget {
 				'/':               (BuildContext context) => LoginPage(),
 				'/login':          (BuildContext context) => LoginPage(),
 				'/register':       (BuildContext context) => Register(),
-				'/forgetpassword': (BuildContext context) => ForgetPassword()
-			}
+				'/forgetPassword': (BuildContext context) => ForgetPassword(),
+				'/resetPassword':  (BuildContext context) => ResetPassword()
+			},
+			// home: UserList()
 		);
 	}
 }
