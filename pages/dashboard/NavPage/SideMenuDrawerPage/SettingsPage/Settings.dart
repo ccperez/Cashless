@@ -14,41 +14,51 @@ class _SettingsState extends State<Settings> {
     return WillPopScope(
       onWillPop: () { navigatePreviousPage(context);},
       child: Scaffold(
+        backgroundColor: Colors.black,
         appBar: AppBar(
-          backgroundColor: Colors.green [900],
+          backgroundColor: Colors.black,
           title: Text('Settings'),
           leading: IconButton(icon: Icon(Icons.arrow_back),
-            onPressed: () => navigatePreviousPage('/dashboard'),
+            onPressed: () => navigatePreviousPage(context),
           )
         ),
-        body: ListView.builder(
-          itemCount: 1,
-          itemBuilder: (context, index) => Column(
+        body: Column(
             children: <Widget>[
-              listTile('Edit Profile', () => navigatePage('/editProfile')),
-              Divider(),
-
-              listTile('Terms and Conditions', null),
-              Divider(),
-
-              listTile('About SmartPay', null),
-              Divider(),
+              Padding(
+                padding: const EdgeInsets.only(top: 30, right: 120),
+                child: title('Account Information'),
+              ),
+              Divider(color: Colors.grey[300]),
+              listTile(Image.asset('assets/SmartPayIcons/Profile.png'), 'Profile', () => navigatePage('/editProfile'), Icons.arrow_forward_ios),
+              Padding(
+                padding: const EdgeInsets.only(top: 80, right: 250),
+                child: title('About Us'),
+              ),
+              Divider(color: Colors.grey[300]),
+              listTile(Image.asset('assets/SmartPayIcons/Terms-Conditions.png'), 'Terms and Conditions', null, Icons.arrow_forward_ios),
+              Padding(padding: const EdgeInsets.only(top: 30)),
+              listTile(Image.asset('assets/SmartPayIcons/About.png'), 'About SmartPay', null , Icons.arrow_forward_ios),
+              Padding(
+                padding: const EdgeInsets.only(top: 270),
+                child: title('SmartPay'),
+              ),
             ],
           )
           )
-      ),
     );
   }
+
+  Widget title(txt) => Text(txt, style: TextStyle(color: Colors.grey[300], fontSize: 20, fontWeight: FontWeight.w500));
   
-  Widget listTile(txt, goTo) => ListTile(
-    title: Text(txt),
+  Widget listTile(prefixIcon, txt, goTo, suffixIcon) => ListTile(
+    title: Text(txt, style: TextStyle(color: Colors.white),),
     onTap: goTo,
+    leading: IconButton(icon: prefixIcon, onPressed: null),
+    trailing: Icon(suffixIcon, color: Colors.grey[300],),
   );
 
   void navigatePage(navTo) =>
 		Navigator.pushReplacementNamed(context, navTo);
 
-  void navigatePreviousPage(navTo){
-    Navigator.popAndPushNamed(context, navTo);
-  }
+  void navigatePreviousPage(context) => Navigator.pushReplacementNamed(context, '/dashboard');
 }

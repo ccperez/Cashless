@@ -85,7 +85,7 @@ class RegistrationUtilities {
     if (response.statusCode == 200) {
 			int result = await users.confirmAccount(phone);
 			if (result > 0) {
-				savePref(setState, 1, phone);
+				// savePref(setState, 1, phone, "");
 				redirectLogin(context);
 			} else {
 				showAlertDialog(context, 'Warning', 'Problem confirming account');
@@ -106,11 +106,12 @@ class RegistrationUtilities {
     ));
   }
 
-  savePref(setState, int signIn,String phone) async {
+  savePref(setState, int signIn, String phone, String name) async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
     setState(() {
       preferences.setInt("signIn", signIn);
       preferences.setString("phone", phone);
+			preferences.setString("name", name);
     });
   }
 

@@ -77,9 +77,10 @@ class _RegisterState extends State<Register> {
 		return WillPopScope(
 			onWillPop: () { register.navigatePreviousPage(context); },
 			child: Scaffold(
+        backgroundColor: Color(0xFF2c3e50),
 				appBar: AppBar(
 					title: Text('Registration'),
-					backgroundColor: Colors.green[900],
+					backgroundColor: Color(0xFF2c3e50),
           leading: IconButton(icon: Icon(Icons.arrow_back),
             onPressed: () { register.navigatePreviousPage(context); }
           )
@@ -87,20 +88,14 @@ class _RegisterState extends State<Register> {
 				body: Form(
 					key: _formKey,
 					autovalidate: _autoValidate,
-					child: Container(
-					  decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topRight,
-                end: Alignment.bottomLeft,
-                colors: [Colors.white, Colors.green]
-              )
-            ),
 					  child: Stack(
 					  	fit: StackFit.expand,
 					  	children: <Widget>[
 					  		ListView(
 					  			children: <Widget>[
-					  				 Column(
+					  				 Container(
+                       margin: EdgeInsets.only(top: 20),
+					  				   child: Column(
 					  							mainAxisAlignment: MainAxisAlignment.center,
 					  							children: <Widget>[		
 					  								textFormField(_phone, Icons. phone_android, 'Phone Number', 'Enter Phone Number', TextInputType.phone, false),
@@ -112,19 +107,30 @@ class _RegisterState extends State<Register> {
 					  								signupButton('Sign Up', TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w400)),
 					  							],
 					  						),
+					  				 ),
 					  			],
 					  		),
 					  	],
 					  ),
 					),
 				),
-			)
 		);
   }
+
+  var redBorder = OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15),
+          borderSide: BorderSide(color: Colors.redAccent, width: 2)
+        );
+
+  var greenBorder = OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15),
+          borderSide: BorderSide(color: Colors.greenAccent, width: 2)
+        );
 
   Widget textFormField(txtController, icnText, lblText, hntText, keyType, blnObscure) => Padding(
     padding: const EdgeInsets.only(left: 30, right: 30, top: 20, bottom: 8),
     child: TextFormField(
+      style: TextStyle(color: Colors.white),
 			autofocus: lblText == 'Phone Number' ? true : false,
 			controller: txtController,
       keyboardType: keyType,
@@ -135,11 +141,16 @@ class _RegisterState extends State<Register> {
       validator: (value) => textValidation(lblText, value),
       decoration: InputDecoration(
 				labelText: lblText,
-        labelStyle: TextStyle(color: Colors.grey [800], fontWeight: FontWeight.w500),
+        labelStyle: TextStyle(color: Colors.grey [300], fontWeight: FontWeight.w500),
 				hintText: hntText,
-        hintStyle: TextStyle(color: Colors.grey [800], fontSize: 14, fontWeight: FontWeight.w400),
-				prefixIcon: Icon(icnText, color: Colors.grey [800]),
+        hintStyle: TextStyle(color: Colors.grey [300], fontSize: 13, fontWeight: FontWeight.w400),
+				prefixIcon: Icon(icnText, color: Colors.grey [300]),
 				suffixIcon: _suffixIcon(lblText, blnObscure),
+        fillColor: Colors.white,
+        enabledBorder: greenBorder,
+        focusedBorder: greenBorder,
+        errorBorder: redBorder,
+        focusedErrorBorder: redBorder
       ),
     ),
   );
@@ -148,14 +159,16 @@ class _RegisterState extends State<Register> {
 		return _isSubmitting
 		? Container()
 		: Padding(
-			padding: const EdgeInsets.only(top: 100),
+			padding: const EdgeInsets.only(top: 50),
       child: ButtonTheme(
-        minWidth: 400,
+        minWidth: 300,
         height: 50,
         child: RaisedButton(
-          color: Colors.green [900],
+          elevation: 5,
+          color: Colors.green,
           child: Text(buttonText, style: styleText,),
           onPressed: () => _submit(),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
         ),
       ),
 		);
@@ -174,7 +187,7 @@ class _RegisterState extends State<Register> {
 	_suffixIcon(lblText, blnObscure) {
 		if (lblText == 'Password' || lblText == 'Pin') {
 			return IconButton(
-				icon: Icon(blnObscure ? Icons.visibility_off : Icons.visibility),
+				icon: Icon(blnObscure ? Icons.visibility_off : Icons.visibility, color: Colors.grey [300]),
 				onPressed: () {
 					lblText == 'Password'
 						? setState(() => passwordVisible = !passwordVisible)

@@ -1,60 +1,70 @@
 import 'package:flutter/material.dart';
 
 class SideMenuDrawer extends StatefulWidget {
-  SideMenuDrawer({Key key}) : super(key: key);
+	final String fullname, phone;
+
+  SideMenuDrawer(this.fullname, this.phone);
 
   @override
-  _SideMenuDrawerState createState() => _SideMenuDrawerState();
+  _SideMenuDrawerState createState() => _SideMenuDrawerState(this.fullname, this.phone);
 }
 
 class _SideMenuDrawerState extends State<SideMenuDrawer> {
+  String fullname, phone;
+
+	_SideMenuDrawerState(this.fullname, this.phone);
+
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(right: 100),
-      child: Container(
-         decoration: BoxDecoration(
-           gradient: LinearGradient(
-             begin: Alignment.topRight,
-             end: Alignment.bottomLeft,
-             colors: [Colors.white, Colors.green]
-           )
-         ),
          child: ListView(
            children: <Widget>[
-             UserAccountsDrawerHeader(
-               accountName: Text('Myco Perez', style: TextStyle(color: Colors.black)),
-               accountEmail: Text('mycoperez@email.com', style: TextStyle(color: Colors.black)),
-               decoration: BoxDecoration(
-                 color: Colors.green [100]
-               ),
-               currentAccountPicture: CircleAvatar(
-                 backgroundColor: Theme.of(context).platform == TargetPlatform.iOS
-                 ? Colors.blue
-                 : Colors.white,
-                 child: Text("M", style: TextStyle(fontSize: 40))
-               ),
-             ),
-             listTile(Icons.settings, 'Settings', () => navigatePage('/settings')),
-             listTile(Icons.help, 'Help', null),
+             Container(
+               constraints: BoxConstraints(maxHeight: 800),
+               color: Color(0xFF2c3e50),
+              child: Column(
+                children: <Widget>[
+                  Padding(
+                    padding: const EdgeInsets.only(top: 30),
+                    child: Icon(Icons.account_circle, size: 80,color: Colors.white,),
+                  ),
+                  text(fullname),
+                  text(securePhone(phone)),
+                  Padding(padding: const EdgeInsets.only(top: 30)),
+                  listTile(Image.asset('assets/SmartPayIcons/Profile.png'), 'Profile', () => navigatePage('/editProfile')),
+                  listTile(Image.asset('assets/SmartPayIcons/Terms-Conditions.png'), 'Terms & Conditions', null),
+                  listTile(Image.asset('assets/SmartPayIcons/About.png'), 'About SmartPay', () => navigatePage('/about'))
+                ],
+              ),
+             )
            ],
          ),
-      )
       );
   }
 
-  Widget listTile(iconText, txt, goTo) => Padding(
-    padding: const EdgeInsets.only(top: 10),
-    child: ListTile(
-      leading: Icon(iconText),
-      title: Text(txt),
-      onTap: goTo
-    )
+  Widget text(txt) => Padding(
+    padding: const EdgeInsets.only(top: 8),
+    child: Text(txt, style: TextStyle(color: Colors.white, fontSize: 16,fontWeight: FontWeight.bold),),
   );
+
+ Widget listTile(iconText, txt, goTo) => ListTile(
+      leading: IconButton(icon: iconText, onPressed: null),
+      title: Text(txt, style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w400)),
+      onTap: goTo
+    );
 
  
 
   void navigatePage(navTo) =>
 		Navigator.pushReplacementNamed(context, navTo);
+
+	securePhone(phone) {
+		return phone == null ? "" : phone.replaceRange(4, 9, '*' * 5);
+	}
+
+	userAvatar(fullname) {
+		return fullname == null ? "" : fullname[0];
+	}
 
 }
