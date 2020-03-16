@@ -4,8 +4,8 @@ exports.up = (knex) => {
     table.string('phone').notNullable();
     table.decimal('amount', 10, 2).defaultTo(0);
     table.string('type').notNullable();
-    table.string('description').notNullable();
-    table.timestamps();
+    table.string('description');
+    table.timestamp('created_at').defaultTo(knex.fn.now());
   });
 };
 
