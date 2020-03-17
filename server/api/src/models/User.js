@@ -1,10 +1,26 @@
 import bookshelf from '../bookshelf';
 import jwt from 'jsonwebtoken';
 
+import UserLoadDetail from './UserLoadDetail';
+import UserPayDetail from './UserPayDetail';
+import UserLoadTransferDetail from './UserLoadTransferDetail';
+
 const { HOST, JWT_SECRET } = process.env;
 
 export default bookshelf.Model.extend({
   tableName: 'users',
+
+  loadDetail: function() {
+    return this.hasMany('UserLoadDetail')
+  },
+
+  payDetail: function() {
+    return this.hasMany('UserPayDetail')
+  },
+
+  loadTransferDetail: function() {
+    return this.hasMany('UserLoadTransferDetail')
+  },
 
   isPasswordMatch: function(password) {
     return password === this.get('password');

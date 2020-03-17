@@ -2,6 +2,7 @@ import express from 'express';
 import user from '../controllers/users';
 import user_forgotpassword from '../controllers/users_forgotpassword';
 import user_update from '../controllers/users_update';
+import user_load from '../controllers/users_load';
 
 const router = express.Router();
 
@@ -42,6 +43,19 @@ router.post('/update_password', (req, res) => {
 
 router.post('/update_pin', (req, res) => {
   user_update.updatePin(req, res);
+});
+
+// user_load
+router.post('/load_money', (req, res) => {
+  user_load.loadMoney(req, res);
+});
+
+router.post('/scan_pay', (req, res) => {
+  user_load.scanPay(req, res);
+});
+
+router.post('/load_transfer', (req, res) => {
+  user_load.loadTransfer(req, res);
 });
 
 export default router;

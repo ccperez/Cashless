@@ -8,5 +8,8 @@ module.exports[NODE_ENV] = {
   migrations: {
     tableName: 'knex_migrations',
     directory: __dirname + '/src/db/migrations'
-  }
+  },
+  seeds: {
+    directory: __dirname + '/src/db/seeds'
+  },
 };
