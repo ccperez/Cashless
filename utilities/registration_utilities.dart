@@ -106,12 +106,13 @@ class RegistrationUtilities {
     ));
   }
 
-  savePref(setState, int signIn, String phone, String name) async {
+  savePref(setState, int signIn, String phone, String name, String email) async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
     setState(() {
       preferences.setInt("signIn", signIn);
       preferences.setString("phone", phone);
 			preferences.setString("name", name);
+      preferences.setString("email", email);
     });
   }
 
