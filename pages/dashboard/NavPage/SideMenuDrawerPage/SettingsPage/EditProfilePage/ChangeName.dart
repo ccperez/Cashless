@@ -121,19 +121,25 @@ class _ChangeNameState extends State<ChangeName> {
     ),
   );
 
-  Widget saveBtn(btnText) => Padding(
-    padding: const EdgeInsets.only(top: 40, left: 20, right: 20),
-    child: ButtonTheme(
-      minWidth: 300,
-      height: 50,
-      child: RaisedButton(
-        color: Colors.green,
-        child: Text(btnText, style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w500)),
-        onPressed: _submit,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+  Widget saveBtn(btnText) {
+		return Padding(
+      padding: const EdgeInsets.only(top: 40, left: 20, right: 20),
+      child: _isLoading
+      ? CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation(Theme.of(context).primaryColor)
+        )
+    	: ButtonTheme(
+        minWidth: 300,
+        height: 50,
+        child: RaisedButton(
+          color: Colors.green,
+          child: Text(btnText, style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w500)),
+          onPressed: _submit,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+        ),
       ),
-    ),
-  );
+    );
+  }
 
   void navigatePage(navTo) =>
 		Navigator.pushReplacementNamed(context, navTo);
