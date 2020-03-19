@@ -22,9 +22,7 @@ export default {
           }
         }
       }).catch(() => {
-          User.forge(
-            userInfo, { hasTimestamps: true }
-          ).save().then(() => {
+          User.forge(userInfo, { hasTimestamps: true }).save().then(() => {
             // res.json({ user: userInfo });
             res.json({ result: 2, description: 'account created, successfully' });
           }).catch(

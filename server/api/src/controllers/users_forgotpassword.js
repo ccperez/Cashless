@@ -45,7 +45,7 @@ export default {
 
     jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
       if (err) {
-        res.status(401).json({ error: "Invalid token" })
+        res.status(401).json({ error: "Reset password process expired, please reprocess again." })
       } else {
         const userResetPassword = (newPassword) => {
           new User({id: decoded.id}).fetch().then(user =>  {
@@ -53,7 +53,7 @@ export default {
               user.save({ password: newPassword, reset_password_completed: 1 })
                 .then(() => res.json({ result: 3, description: 'reset password reset_password_completed' }) );
             } else {
-              res.status(401).json({ error: "Invalid token" });
+              res.status(401).json({ error: "Reset password process expired, please reprocess again." });
             }
           });
         };

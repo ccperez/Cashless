@@ -28,7 +28,7 @@ class _DashboardState extends State<Dashboard> with SingleTickerProviderStateMix
 		setState(() {
 			signIn = preferences.getInt("signIn");
 			_phone =  preferences.getString("phone");
-			_fullname =  preferences.getString("name") ?? "Myco Perez";
+			_fullname =  preferences.getString("name");
 		});
   }
 

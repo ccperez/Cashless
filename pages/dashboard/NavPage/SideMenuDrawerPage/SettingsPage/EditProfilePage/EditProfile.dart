@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class EditProfile extends StatefulWidget {
   EditProfile({Key key}) : super(key: key);
@@ -9,10 +10,27 @@ class EditProfile extends StatefulWidget {
 
 class _EditProfileState extends State<EditProfile> {
 
+  var _phone, _fullname, _email;
+
+  getPref() async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+		setState(() {
+			_phone =  preferences.getString("phone");
+			_fullname =  preferences.getString("name");
+      _email =  preferences.getString("email");
+		});
+  }
+
+  @override
+	void initState() {
+		super.initState();
+		getPref();
+	}   
+
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
-      onWillPop: () {navigatePreviousPage(context);},
+      onWillPop: () { navigatePreviousPage(context); },
       child: Scaffold(
         appBar: AppBar(
           backgroundColor: Color(0xFF2c3e50),
@@ -27,15 +45,15 @@ class _EditProfileState extends State<EditProfile> {
               ListView(
                 children: <Widget>[
                   title('Name'),
-                  card('Myco Paul John Perez', Icon(Icons.edit, color: Colors.grey), () => navigatePage('/changeName')),
+                  card(_fullname, Icon(Icons.edit, color: Colors.grey), () => navigatePage('/changeName')),
                   title('Phone Number'),
-                  card('09123456789', Icon(Icons.phone_android, color: Colors.grey), null),
+                  card(securePhone(_phone), Icon(Icons.phone_android, color: Colors.grey), null),
                   title('Email'),
-                  card('example@email.com', Icon(Icons.email, color: Colors.grey), null),
+                  card(_email, Icon(Icons.email, color: Colors.grey), null),
                   title('Password'),
-                  card('123456', Icon(Icons.lock, color: Colors.grey), null),
+                  card('********', Icon(Icons.lock, color: Colors.grey), null),
                   title('Pin'),
-                  card('123456', Icon(Icons.vpn_key, color: Colors.grey), null),
+                  card('********', Icon(Icons.vpn_key, color: Colors.grey), null),
                 ],
               )
             ],
@@ -63,5 +81,9 @@ class _EditProfileState extends State<EditProfile> {
 		Navigator.pushReplacementNamed(context, navTo);
 
   void navigatePreviousPage(context) => Navigator.pushReplacementNamed(context, '/dashboard');
+
+	securePhone(phone) {
+		return phone == null ? "" : phone.replaceRange(4, 9, '*' * 5);
+	}  
 
 }
