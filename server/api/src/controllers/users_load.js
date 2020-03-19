@@ -27,13 +27,13 @@ export default {
   },
 
   scanPay: (req, res) => {
-    const { phone, amount, type } = req.body;
-    const payInfo = { phone, amount, type };
-    const { errors, isValid } = validateInput(payInfo, ['phone', 'amount', 'type']);
+    const { phone, amount, type, pay } = req.body;
+    const payInfo = { phone, amount, type, pay };
+    const { errors, isValid } = validateInput(payInfo, ['phone', 'amount', 'type', 'pay']);
 
-    const pay = (payInfo) => {
+    const payItem = (payInfo) => {
       UserCurrentLoad.where({phone: phone, type_id: type}).where('load', '>', amount).fetch().then(() => {
-        UserPayDetail.forge({ phone: phone, amount: amount, type_id: type }).save().then(
+        UserPayDetail.forge({ phone: phone, amount: amount, type_id: type, pay_id: pay }).save().then(
           () => res.json({ result: 1, description: `${amount} Pay successfully` })
         );
       }).catch(
@@ -41,7 +41,7 @@ export default {
       );
     }
 
-    isValid ? pay(phone, amount, type) : res.status(400).json(errors);
+    isValid ? payItem(phone, amount, type, pay) : res.status(400).json(errors);
   },
 
   loadTransfer: (req, res) => {
