@@ -58,7 +58,7 @@ class _LoginPageState extends State<LoginPage> implements LoginCallBack {
   void onLoginSuccess(User user) async {
 
     if (user != null) {
-      register.savePref(setState, 1, user.phone, user.name);
+      register.savePref(setState, 1, user.phone, user.name, user.email);
       _loginStatus = LoginStatus.signIn;
     } else {
       setState(() => _isLoading = false);
