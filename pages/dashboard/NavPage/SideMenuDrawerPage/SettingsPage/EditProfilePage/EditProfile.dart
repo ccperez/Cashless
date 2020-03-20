@@ -30,7 +30,7 @@ class _EditProfileState extends State<EditProfile> {
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
-      onWillPop: () {navigatePreviousPage(context);},
+      onWillPop: () { navigatePreviousPage(context); },
       child: Scaffold(
         appBar: AppBar(
           backgroundColor: Color(0xFF2c3e50),

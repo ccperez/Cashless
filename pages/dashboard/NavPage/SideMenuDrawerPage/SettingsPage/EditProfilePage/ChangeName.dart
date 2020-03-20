@@ -9,8 +9,6 @@ import '../../../../../../utilities/registration_utilities.dart';
 import '../../../../../../global.dart';
 
 class ChangeName extends StatefulWidget {
-  ChangeName({Key key}) : super(key: key);
-
   @override
   _ChangeNameState createState() => _ChangeNameState();
 }
@@ -42,10 +40,26 @@ class _ChangeNameState extends State<ChangeName> {
 		getPref();
 	}  
 
+  var _phone, _currentname, _newname;
+
+  getPref() async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+		setState(() {
+			_phone =  preferences.getString("phone");
+			_currentname =  preferences.getString("name");
+		});
+  }
+
+  @override
+	void initState() {
+		super.initState();
+		getPref();
+	}  
+
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
-      onWillPop: () {navigatePreviousPage(context);},
+      onWillPop: () { navigatePreviousPage(context); },
       child: Scaffold(
         appBar: AppBar(
           backgroundColor: Color(0xFF2c3e50),
@@ -99,11 +113,10 @@ class _ChangeNameState extends State<ChangeName> {
 
   Widget text(listTxt) => Padding(
     padding: const EdgeInsets.only(top: 30),
-    child: Text(listTxt, style: TextStyle(color: Colors.grey[300], fontSize: 13, fontWeight: FontWeight.w500)
-    )
+    child: Text(listTxt, style: TextStyle(color: Colors.grey[300], fontSize: 13, fontWeight: FontWeight.w500))
   );
 
-  Widget textFormField(lblText,hntText) => Padding(
+  Widget textFormField(lblText, hntText) => Padding(
     padding: const EdgeInsets.only(left: 20, right: 20, top: 50),
     child: TextFormField(
       style: TextStyle(color: Colors.white),
@@ -122,40 +135,47 @@ class _ChangeNameState extends State<ChangeName> {
   );
 
   Widget saveBtn(btnText) {
-		return Padding(
-      padding: const EdgeInsets.only(top: 40, left: 20, right: 20),
-      child: _isLoading
+		return _isLoading
       ? CircularProgressIndicator(
           valueColor: AlwaysStoppedAnimation(Theme.of(context).primaryColor)
         )
-    	: ButtonTheme(
-        minWidth: 300,
-        height: 50,
-        child: RaisedButton(
-          color: Colors.green,
-          child: Text(btnText, style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w500)),
-          onPressed: _submit,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
-        ),
-      ),
-    );
+    	: Padding(
+          padding: const EdgeInsets.only(top: 40, left: 20, right: 20),
+          child: ButtonTheme(
+            minWidth: 300,
+            height: 50,
+            child: RaisedButton(
+              color: Colors.green,
+              child: Text(btnText, style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w500)),
+              onPressed: _submit,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+            ),
+          ),
+        );
   }
 
-  void navigatePage(navTo) =>
-		Navigator.pushReplacementNamed(context, navTo);
-
-  void navigatePreviousPage(context) => Navigator.pushReplacementNamed(context, '/editProfile');
+  textValidation(hntText, value) {
+    if (value.isEmpty) {
+      return '$hntText should not be empty';
+    } else { 
+      if(!value.contains(' ')) {
+        return 'Invalid Full Name';
+      }
+    }
+  }
 
   void _submit() {
     final form = _formKey.currentState;
     if (form.validate()) {
-      _submitNewName();
+      form.save();
+      setState(() => _isLoading = true);
+      _updateFullname();
     } else {
       setState(() => _autoValidate = true);
     }
   }
 
-	void _submitNewName() async {
+	void _updateFullname() async {
   	var data = { "phone" : _phone, "name" : _newname };
 
     http.Response response = await http.post(UPDATE_FULLNAME, body: data);
@@ -167,6 +187,11 @@ class _ChangeNameState extends State<ChangeName> {
 			if (result == 1) { 
 				result = await users.updateFullname(_phone, _newname);
 				if (result == 1) {
+          SharedPreferences preferences = await SharedPreferences.getInstance();
+          setState(() {
+            preferences.setString("name", _newname);
+            _currentname = _newname;
+          });
           dialog();
 				} else {
 					register.snackBarShow(scaffoldKey, 'Problem updating fullname');
@@ -181,27 +206,19 @@ class _ChangeNameState extends State<ChangeName> {
     context: context, builder: (BuildContext context) => AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       title: IconButton(icon: Icon(Icons.check_circle_outline),
-        disabledColor: Colors.green,
-        iconSize: 60,
-        onPressed: null
+        disabledColor: Colors.green, iconSize: 60, onPressed: null
       ),
       content: Text('Name has been changed successfully!',style: TextStyle(fontSize: 16)),
       actions: <Widget>[
         FlatButton(
-          child: Text('OKAY'),
-          onPressed: () => navigatePage('/editProfile'),
+          child: Text('OKAY'), onPressed: () => navigatePage('/editProfile'),
         )
       ],
     )
   );
 
-  textValidation(hntText, value) {
-    if (value.isEmpty) {
-      return '$hntText should not be empty';
-    } else { 
-      if(!value.contains(' ')) {
-        return 'Invalid Full Name';
-      }
-    }
-  }
+  void navigatePage(navTo) => Navigator.pushReplacementNamed(context, navTo);
+
+  void navigatePreviousPage(context) => Navigator.pushReplacementNamed(context, '/editProfile');
+
 }

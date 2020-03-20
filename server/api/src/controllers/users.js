@@ -22,20 +22,12 @@ export default {
           }
         }
       }).catch(() => {
-          User.forge({ studentId: studentId }).fetch().then((user) => {
-            if (user) {
-              res.status(401).json({ error: 'Student ID, already used by another user' })
-            } else {
-              User.forge(
-                userInfo, { hasTimestamps: true }
-              ).save().then(() => {
-                // res.json({ user: userInfo });
-                res.json({ result: 2, description: 'account created, successfully' });
-              }).catch(
-                err => res.status(500).json({ error: err })
-              );
-            }
-          });
+          User.forge(userInfo, { hasTimestamps: true }).save().then(() => {
+            // res.json({ user: userInfo });
+            res.json({ result: 2, description: 'account created, successfully' });
+          }).catch(
+            err => res.status(500).json({ error: err })
+          );
         }
       )
     };
