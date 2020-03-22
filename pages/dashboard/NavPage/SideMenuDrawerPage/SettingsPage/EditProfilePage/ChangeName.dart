@@ -38,23 +38,7 @@ class _ChangeNameState extends State<ChangeName> {
 	void initState() {
 		super.initState();
 		getPref();
-	}  
-
-  var _phone, _currentname, _newname;
-
-  getPref() async {
-    SharedPreferences preferences = await SharedPreferences.getInstance();
-		setState(() {
-			_phone =  preferences.getString("phone");
-			_currentname =  preferences.getString("name");
-		});
-  }
-
-  @override
-	void initState() {
-		super.initState();
-		getPref();
-	}  
+	}
 
   @override
   Widget build(BuildContext context) {
@@ -76,7 +60,7 @@ class _ChangeNameState extends State<ChangeName> {
             children: <Widget>[
               ListView(
                 children: <Widget>[
-                  Container( 
+                  Container(
                     margin: EdgeInsets.only(top: 30, bottom: 30),
                     child: Image.asset("assets/SmartPayIcons/Name.png", width: 200, height: 200),
                   ),
@@ -157,7 +141,7 @@ class _ChangeNameState extends State<ChangeName> {
   textValidation(hntText, value) {
     if (value.isEmpty) {
       return '$hntText should not be empty';
-    } else { 
+    } else {
       if(!value.contains(' ')) {
         return 'Invalid Full Name';
       }
@@ -184,7 +168,7 @@ class _ChangeNameState extends State<ChangeName> {
 		setState(() => _isLoading = false);
     if (response.statusCode == 200) {
 			int result = responseData['result'];
-			if (result == 1) { 
+			if (result == 1) {
 				result = await users.updateFullname(_phone, _newname);
 				if (result == 1) {
           SharedPreferences preferences = await SharedPreferences.getInstance();
@@ -200,7 +184,7 @@ class _ChangeNameState extends State<ChangeName> {
 		} else {
     	register.snackBarShow(scaffoldKey, responseData['error']);
 		}
-  }  
+  }
 
   dialog() => showDialog(
     context: context, builder: (BuildContext context) => AlertDialog(

@@ -5,7 +5,6 @@ import './pages/login/LoginPage.dart';
 import './pages/register/RegisterPage.dart';
 import './pages/forget/ForgetPassword.dart';
 import './pages/forget/ResetPassword.dart';
-import './pages/dashboard/dashboard.dart';
 import './pages/dashboard/NavPage/LoadWalletPage/LoadWallet.dart';
 import './pages/dashboard/NavPage/LoadWalletPage/LoadWalletQR.dart';
 import './pages/dashboard/NavPage/ScantoPayPage/ScantoPay.dart';
@@ -37,7 +36,6 @@ class MyApp extends StatelessWidget {
 				'/register'             : (BuildContext context) => Register(),
 				'/forgetPassword'       : (BuildContext context) => ForgetPassword(),
 				'/resetPassword'        : (BuildContext context) => ResetPassword(),
-				'/dashboard'            : (BuildContext context) => Dashboard(null),
 				'/loadWallet'           : (BuildContext context) => LoadWallet(),
 				'/loadWalletQR'         : (BuildContext context) => LoadWalletQR(),
 				'/scantoPay'            : (BuildContext context) => ScantoPay(),

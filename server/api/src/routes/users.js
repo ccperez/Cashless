@@ -46,6 +46,10 @@ router.post('/update_pin', (req, res) => {
 });
 
 // user_load
+router.get('/current_load/:phone', (req, res) => {
+  user_load.currentLoad(req, res);
+});
+
 router.post('/load_money', (req, res) => {
   user_load.loadMoney(req, res);
 });

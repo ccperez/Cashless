@@ -8,6 +8,23 @@ import validateInput from '../shared/validations/common';
 
 export default {
 
+  currentLoad: (req, res) => {
+    const phone = req.params.phone;
+    UserCurrentLoad.where({ phone: phone }).fetchAll().then((load) => {
+      res.json({ result: 1, userload: load });
+      /*
+        let strLoad;
+        users.forEach(function(user) {
+          strLoad += "|"+user['load'];
+        });
+        let load = strLoad.split("|");
+        res.json({ result: 1, load: {allowance: load[1], tuition: load[2]} });
+      */
+    }).catch(
+      err => res.status(500).json({ error: 'Error getting user load' })
+    );
+  },
+
   loadMoney: (req, res) => {
     const { phone, amount, type, source } = req.body;
     const loadInfo = { phone, amount, type, source };

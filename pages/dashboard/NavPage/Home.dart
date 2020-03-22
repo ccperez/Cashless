@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Home extends StatefulWidget {
   Home({Key key}) : super(key: key);
@@ -8,6 +9,19 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+
+  var _phone;
+
+  getPref() async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+		setState(() { _phone =  preferences.getString("phone"); });
+  }
+
+  @override
+	void initState() {
+		super.initState();
+		getPref();
+	}
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +63,7 @@ class _HomeState extends State<Home> {
                             children: <Widget>[
                               Padding(
                                padding: const EdgeInsets.only(top: 46, left: 30),
-                                child: card('09123456789', TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w300)),
+                                child: card(securePhone(_phone), TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w300)),
                               ),
 
                               Padding(
@@ -67,7 +81,7 @@ class _HomeState extends State<Home> {
                     decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(30),
                     gradient: LinearGradient(
-                      colors: [Color(0xFF16a085), Color(0xFF00cc88)] 
+                      colors: [Color(0xFF16a085), Color(0xFF00cc88)]
                     )
                   ),
                 ),
@@ -82,7 +96,7 @@ class _HomeState extends State<Home> {
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
               child: ListTile(
                 leading: IconButton(
-                  icon: Image.asset('assets/FunctionIcons/ScantoPay.png'), 
+                  icon: Image.asset('assets/FunctionIcons/ScantoPay.png'),
                   onPressed: null,
                   iconSize: 80),
                 onTap: () => navigatePage('/scantoPay'),
@@ -98,7 +112,7 @@ class _HomeState extends State<Home> {
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
               child: ListTile(
                 leading: IconButton(
-                  icon: Image.asset('assets/FunctionIcons/TransferMoney.png'), 
+                  icon: Image.asset('assets/FunctionIcons/TransferMoney.png'),
                   onPressed: null,
                   iconSize: 80),
                 onTap: () => navigatePage('/transferMoney'),
@@ -114,7 +128,7 @@ class _HomeState extends State<Home> {
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
               child: ListTile(
                 leading: IconButton(
-                  icon: Image.asset('assets/FunctionIcons/ReceiveMoney.png'), 
+                  icon: Image.asset('assets/FunctionIcons/ReceiveMoney.png'),
                   onPressed: null,
                   iconSize: 80),
                 onTap: () => navigatePage('/receiveMoney'),
@@ -145,10 +159,12 @@ class _HomeState extends State<Home> {
   );
 
 
-  void navigatePage(navTo) =>
-		Navigator.pushReplacementNamed(context, navTo);
+  void navigatePage(navTo) => Navigator.pushReplacementNamed(context, navTo);
+
+	securePhone(phone) => phone == null ? "" : phone.replaceRange(4, 9, '*' * 5);
+
 }
-  
+
 
   /*@override
   Widget build(BuildContext context) {
@@ -276,6 +292,6 @@ class _HomeState extends State<Home> {
     );
   } */
 
-  
 
-   
+
+

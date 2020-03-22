@@ -25,7 +25,7 @@ class _EditProfileState extends State<EditProfile> {
 	void initState() {
 		super.initState();
 		getPref();
-	}   
+	}
 
   @override
   Widget build(BuildContext context) {
@@ -76,14 +76,14 @@ class _EditProfileState extends State<EditProfile> {
       title: Text(listTxt, style: TextStyle(color: Colors.grey),),
     ),
   );
-  
+
   void navigatePage(navTo) =>
 		Navigator.pushReplacementNamed(context, navTo);
 
-  void navigatePreviousPage(context) => Navigator.pushReplacementNamed(context, '/dashboard');
+  void navigatePreviousPage(context) => Navigator.pushReplacementNamed(context, '/');
 
 	securePhone(phone) {
 		return phone == null ? "" : phone.replaceRange(4, 9, '*' * 5);
-	}  
+	}
 
 }
