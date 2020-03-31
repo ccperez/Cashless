@@ -58,8 +58,8 @@ class _LoginPageState extends State<LoginPage> implements LoginCallBack {
   void onLoginSuccess(User user) async {
 
     if (user != null) {
-      register.savePref(setState, 1, user.phone, user.name, user.email);
-      _loginStatus = LoginStatus.signIn;
+			_loginStatus = LoginStatus.signIn;
+			register.savePref(setState, 1, user.name, user);
     } else {
       setState(() => _isLoading = false);
 			register.snackBarShow(scaffoldKey, "Invalid credentials");
@@ -249,10 +249,11 @@ class _LoginPageState extends State<LoginPage> implements LoginCallBack {
 
 	getPref() async {
 		SharedPreferences preferences = await SharedPreferences.getInstance();
+    var userInfo = json.decode(preferences.getString("user"));
 		setState(() {
-			signIn = preferences.getInt("signIn");
-			_phone = preferences.getString("phone");
-			_loginStatus = signIn == 1 ? LoginStatus.signIn : LoginStatus.notSignIn;
+			signIn = userInfo["signIn"];
+      _phone = userInfo["phone"];
+      _loginStatus = signIn == 1 ? LoginStatus.signIn : LoginStatus.notSignIn;
 		});
 	}
 
@@ -260,9 +261,9 @@ class _LoginPageState extends State<LoginPage> implements LoginCallBack {
     SharedPreferences preferences = await SharedPreferences.getInstance();
     setState(() {
 			_isLoading = false;
-      preferences.setInt("signIn", null);
-			preferences.setString("phone", null);
-      _loginStatus = LoginStatus.notSignIn;
+			_loginStatus = LoginStatus.notSignIn;
+			preferences.setString("name", null);
+			preferences.setString("user", null);
     });
   }
 

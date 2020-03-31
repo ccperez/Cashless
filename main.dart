@@ -13,6 +13,8 @@ import './pages/dashboard/NavPage/TransferMoneyPage/TransferMoneyDetails.dart';
 import './pages/dashboard/NavPage/ReceiveMoneyPage/ReceiveMoney.dart';
 import './pages/dashboard/NavPage/SideMenuDrawerPage/SettingsPage/EditProfilePage/EditProfile.dart';
 import './pages/dashboard/NavPage/SideMenuDrawerPage/SettingsPage/EditProfilePage/ChangeName.dart';
+import './pages/dashboard/NavPage/SideMenuDrawerPage/SettingsPage/EditProfilePage/ChangePass.dart';
+import './pages/dashboard/NavPage/SideMenuDrawerPage/SettingsPage/EditProfilePage/ChangePin.dart';
 import './pages/dashboard/NavPage/SideMenuDrawerPage/About.dart';
 
 
@@ -44,6 +46,8 @@ class MyApp extends StatelessWidget {
 				'/receiveMoney'         : (BuildContext context) => ReceiveMoney(),
 				'/editProfile'          : (BuildContext context) => EditProfile(),
 				'/changeName'           : (BuildContext context) => ChangeName(),
+				'/changePass'           : (BuildContext context) => ChangePass(),
+				'/changePin'            : (BuildContext context) => ChangePin(),
 				'/about'                : (BuildContext context) => About()
 			},
 			// home: UserList()

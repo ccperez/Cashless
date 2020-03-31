@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -14,10 +16,11 @@ class _EditProfileState extends State<EditProfile> {
 
   getPref() async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
+    var userInfo = json.decode(preferences.getString("user"));
 		setState(() {
-			_phone =  preferences.getString("phone");
-			_fullname =  preferences.getString("name");
-      _email =  preferences.getString("email");
+      _fullname = preferences.getString("name");
+      _phone    = userInfo["phone"];
+      _email    = userInfo["email"];
 		});
   }
 
@@ -51,9 +54,9 @@ class _EditProfileState extends State<EditProfile> {
                   title('Email'),
                   card(_email, Icon(Icons.email, color: Colors.grey), null),
                   title('Password'),
-                  card('********', Icon(Icons.lock, color: Colors.grey), null),
+                  card('********', Icon(Icons.edit, color: Colors.grey), () => cfmPassDialog()),
                   title('Pin'),
-                  card('********', Icon(Icons.vpn_key, color: Colors.grey), null),
+                  card('********', Icon(Icons.edit, color: Colors.grey), () => cfmPinDialog()),
                 ],
               )
             ],
@@ -85,5 +88,65 @@ class _EditProfileState extends State<EditProfile> {
 	securePhone(phone) {
 		return phone == null ? "" : phone.replaceRange(4, 9, '*' * 5);
 	}
+
+  //Password Confirmation Code
+  cfmPassDialog() => showDialog(
+    context: context,
+    builder: (BuildContext context) => AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20),
+    ),
+    title: Column(children: <Widget>[
+      Text('CHANGE PASSWORD', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+      Padding(padding: const EdgeInsets.only(top: 10)),
+      Text('To proceed with your request, please enter your confirmation code sent to your email:',
+        style: TextStyle(fontSize: 16, fontWeight: FontWeight.normal)),
+    ],),
+    content: TextField(
+      autofocus: true,
+      decoration: InputDecoration(
+        hintText: 'Enter Confirmation Code',
+        hintStyle: TextStyle(fontSize: 12),
+        prefixIcon: Icon(Icons.code),
+        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    ),
+    actions: <Widget>[
+      FlatButton(
+        child: Text('SUBMIT'),
+        onPressed: () => navigatePage('/changePass'),
+      )
+    ],
+  ));
+
+  //Pin Confirmation Code
+  cfmPinDialog() => showDialog(
+    context: context,
+    builder: (BuildContext context) => AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20),
+    ),
+    title: Column(children: <Widget>[
+      Text('CHANGE PIN', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+      Padding(padding: const EdgeInsets.only(top: 10)),
+      Text('To proceed with your request, please enter your confirmation code sent to your email:',
+        style: TextStyle(fontSize: 16, fontWeight: FontWeight.normal)),
+    ],),
+    content: TextField(
+      autofocus: true,
+      decoration: InputDecoration(
+        hintText: 'Enter Confirmation Code',
+        hintStyle: TextStyle(fontSize: 12),
+        prefixIcon: Icon(Icons.code),
+        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    ),
+    actions: <Widget>[
+      FlatButton(
+        child: Text('SUBMIT'),
+        onPressed: () => navigatePage('/changePin'),
+      )
+    ],
+  ));
+
+
 
 }

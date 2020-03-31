@@ -28,9 +28,10 @@ class _ChangeNameState extends State<ChangeName> {
 
   getPref() async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
+    var userInfo = json.decode(preferences.getString("user"));
 		setState(() {
-			_phone =  preferences.getString("phone");
-			_currentname =  preferences.getString("name");
+      _phone       = userInfo["phone"];
+      _currentname =  preferences.getString("name");
 		});
   }
 

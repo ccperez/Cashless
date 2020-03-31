@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -14,7 +16,8 @@ class _HomeState extends State<Home> {
 
   getPref() async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
-		setState(() { _phone =  preferences.getString("phone"); });
+    var userInfo = json.decode(preferences.getString("user"));
+		setState(() { _phone = userInfo["phone"]; });
   }
 
   @override
@@ -55,14 +58,28 @@ class _HomeState extends State<Home> {
                         Container(
                           alignment: Alignment.topLeft,
                           margin: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                          child: card('₱123,456', TextStyle(color: Colors.white, fontSize: 30, fontWeight: FontWeight.w400)),
+                          child: Table(
+                            border: TableBorder.all(color: Colors.black26, width: 1, style: BorderStyle.none),
+                            children: [
+                              TableRow(children: [
+                                TableCell(child: Text('Allowance')),
+                                TableCell(child: Text(': ₱')),
+                                TableCell(child: Text('123,456'))
+                              ]),
+                              TableRow(children: [
+                                TableCell(child: Text('Tuition')),
+                                TableCell(child: Text(': ₱')),
+                                TableCell(child: Text('123,456'))
+                              ]),
+                            ],
+                          ),
                         ),
 
                         Container(
                           child: Row(
                             children: <Widget>[
                               Padding(
-                               padding: const EdgeInsets.only(top: 46, left: 30),
+                               padding: const EdgeInsets.only(top: 30, left: 30),
                                 child: card(securePhone(_phone), TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w300)),
                               ),
 

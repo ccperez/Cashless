@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -25,10 +27,11 @@ class _DashboardState extends State<Dashboard> with SingleTickerProviderStateMix
 
   getPref() async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
+    var userInfo = json.decode(preferences.getString("user"));
 		setState(() {
-			signIn = preferences.getInt("signIn");
-			_phone =  preferences.getString("phone");
-			_fullname =  preferences.getString("name");
+			signIn    = userInfo["signIn"];
+      _phone    = userInfo["phone"];
+      _fullname = preferences.getString("name");
 		});
   }
 
