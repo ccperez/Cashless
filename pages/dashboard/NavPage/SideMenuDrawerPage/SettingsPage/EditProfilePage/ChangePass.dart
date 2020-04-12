@@ -1,24 +1,35 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../../../../../controller/users_controller.dart';
+import '../../../../../../controller/user_api_controller.dart';
+import '../../../../../../utilities/registration_utilities.dart';
 
 class ChangePass extends StatefulWidget {
-  ChangePass({Key key}) : super(key: key);
-
   @override
   _ChangePassState createState() => _ChangePassState();
 }
 
 class _ChangePassState extends State<ChangePass> {
 
+  UsersController users = UsersController();
+	UserAPIController userAPI = UserAPIController();
+	RegistrationUtilities register = RegistrationUtilities();
+
   final _formKey = GlobalKey<FormState>();
 	final scaffoldKey = GlobalKey<ScaffoldState>();
 
-  //bool _isLoading = false;
+  bool _isLoading = false;
   bool _autoValidate = false;
 
   bool newPasswordVisible, cfmPasswordVisible;
 
   final _newPassword = TextEditingController();
 	final _cfmPassword = TextEditingController();
+
+  String _phone, _token;
 
   @override
   void initState() {
@@ -88,7 +99,7 @@ class _ChangePassState extends State<ChangePass> {
   var greenBorder = OutlineInputBorder(
           borderRadius: BorderRadius.circular(15),
           borderSide: BorderSide(color: Colors.greenAccent, width: 2)
-        );  
+        );
 
   Widget text(txt, styleText) => Padding(
     padding: const EdgeInsets.only(left: 20, right: 20, bottom: 8),
@@ -116,21 +127,29 @@ class _ChangePassState extends State<ChangePass> {
     ),
   );
 
-  Widget saveBtn(btnText, styleText) => Padding(
-    padding: const EdgeInsets.only(top: 50),
-    child: ButtonTheme(
-      minWidth: 300,
-      height: 50,
-      child: RaisedButton(
-        elevation: 5,
-        color: Colors.green,
-        child: Text(
-          btnText, style: styleText
+  Widget saveBtn(btnText, styleText) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 20),
+      child: _isLoading
+      ? CircularProgressIndicator(
+        valueColor: AlwaysStoppedAnimation(Theme.of(context).primaryColor),
+      )
+      : Padding(
+        padding: const EdgeInsets.only(top: 30),
+        child: ButtonTheme(
+          minWidth: 300,
+          height: 50,
+          child: RaisedButton(
+            elevation: 5,
+            color: Colors.green,
+            child: Text(btnText, style: styleText),
+            onPressed: () => _submit(),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           ),
-          onPressed: () => _submit(),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),),
-    ),
-  );
+        ),
+      )
+    );
+  }
 
   _suffixIcon(lblText, blnObscure) {
     if (lblText == 'New Password' || lblText == 'Confirm Password') {
@@ -167,29 +186,57 @@ class _ChangePassState extends State<ChangePass> {
       children: <Widget>[
       Icon(Icons.check_circle_outline, color: Colors.green, size: 60),
       Padding(padding: const EdgeInsets.only(top: 8)),
-      Text('Password changed succesfully!', style: TextStyle(fontSize: 13),)
+      Text('Password changed succesfully!', style: TextStyle(fontSize: 16),)
     ],),
     actions: <Widget>[
       FlatButton(
         child: Text('OKAY'),
-        onPressed: () => navigatePage('/editProfile'),
+        onPressed: () => navigatePreviousPage(context),
       )
     ],
     ),
   );
 
-
   void _submit() {
 		final form = _formKey.currentState;
 		if (form.validate()) {
-			pswdSccsful();
+      setState(() => _isLoading = true);
+      _chngePass();
 		} else {
 			setState(() => _autoValidate = true);
 		}
 	}
 
-  void navigatePage(navTo) =>
-		Navigator.pushReplacementNamed(context, navTo);
+  void _chngePass() async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    var userInfo = json.decode(preferences.getString("user"));
+
+    setState(() {
+      _phone = userInfo["phone"];
+      _token = preferences.getString("token");
+    });
+
+		var returnResult = await userAPI.resetSecure('PW', _token, _newPassword.text, _cfmPassword.text);
+		returnResult = json.decode(returnResult);
+
+		Future.delayed(Duration(seconds: 1), () async {
+			setState(() => _isLoading = false);
+			if (returnResult['statusCode'] == 200) {
+				int result = returnResult['result'];
+				if (result == 3) {
+					result = await users.resetSecure('PW', _phone, _newPassword.text);
+					if (result == 1) {
+						_formKey.currentState.reset();
+						pswdSccsful();
+					} else {
+						register.snackBarShow(scaffoldKey, 'Problem changing password');
+					}
+				}
+			} else {
+				register.snackBarShow(scaffoldKey, returnResult['error']);
+			}
+		});
+  }
 
   void navigatePreviousPage(context) => Navigator.pushReplacementNamed(context, '/editProfile');
 
