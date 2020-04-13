@@ -111,6 +111,7 @@ class _ChangeNameState extends State<ChangeName> {
       decoration: InputDecoration(
         labelText: lblText, labelStyle: TextStyle(color: Colors.grey[300], fontSize: 15, fontWeight: FontWeight.w500),
         hintText: hntText, hintStyle: TextStyle(color: Colors.grey[300], fontSize: 15),
+				errorStyle: TextStyle(fontSize: 16.0),
         enabledBorder: greenBorder,
         focusedBorder: greenBorder,
         errorBorder: redBorder,
