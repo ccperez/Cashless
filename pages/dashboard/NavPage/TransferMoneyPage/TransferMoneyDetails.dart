@@ -11,7 +11,7 @@ class _TransferMoneyDetailsState extends State<TransferMoneyDetails> {
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
-      onWillPop: (){ navigatePreviousPage(context);},
+      onWillPop: (){ navigatePreviousPage(context); },
       child: Scaffold(
         appBar: AppBar(
           backgroundColor: Color(0xFF2c3e50),
@@ -22,7 +22,6 @@ class _TransferMoneyDetailsState extends State<TransferMoneyDetails> {
         ),
       body: ListView(
         children: <Widget>[
-          
               Container(
                 margin: EdgeInsets.only(top: 170, left: 30, right: 30),
                 alignment: Alignment.topLeft,
@@ -41,7 +40,6 @@ class _TransferMoneyDetailsState extends State<TransferMoneyDetails> {
               transferButton('Transfer')
             ],
           ),
-        
       )
     );
   }
